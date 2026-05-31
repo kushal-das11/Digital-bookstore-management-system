@@ -1,7 +1,6 @@
 package com.cts.inventory.service;
 
 import com.cts.inventory.dto.AvailabilityDto;
-import com.cts.inventory.model.Inventory;
 import com.cts.inventory.dto.InventoryRequestDTO;
 import com.cts.inventory.dto.InventoryResponseDTO;
 
