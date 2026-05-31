@@ -10,9 +10,21 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 
+
+/**
+ * Handles global exceptions across the application
+ * and returns standardized error responses.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+
+    /**
+     * Handles InventoryNotFoundException.
+     *
+     * @param ex exception details
+     * @return error response with NOT_FOUND status
+     */
     @ExceptionHandler(InventoryNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(InventoryNotFoundException ex) {
         return new ResponseEntity<>(
@@ -21,6 +33,12 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Handles InvalidInventoryException.
+     *
+     * @param ex exception details
+     * @return error response with BAD_REQUEST status
+     */
     @ExceptionHandler(InvalidInventoryException.class)
     public ResponseEntity<ErrorResponse> handleInvalid(InvalidInventoryException ex) {
         return new ResponseEntity<>(
@@ -29,6 +47,12 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Handles OutOfStockException.
+     *
+     * @param ex exception details
+     * @return error response with CONFLICT status
+     */
     @ExceptionHandler(OutOfStockException.class)
     public ResponseEntity<ErrorResponse> handleStock(OutOfStockException ex) {
         return new ResponseEntity<>(
@@ -37,6 +61,13 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Builds a standard error response.
+     *
+     * @param message error message
+     * @param status HTTP status
+     * @return formatted error response
+     */
     private ErrorResponse buildError(String message, HttpStatus status) {
         return new ErrorResponse(
                 LocalDateTime.now(),

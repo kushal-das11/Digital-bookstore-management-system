@@ -18,6 +18,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+
+/**
+ * Implementation of {@link InventoryService} for handling inventory operations.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -25,7 +29,10 @@ public class InventoryServiceImpl implements InventoryService {
 
     private final InventoryRepository repository;
 
-    // ===================== MAPPERS =====================
+
+    /**
+     * Converts Inventory entity to response DTO.
+     */
     private InventoryResponseDTO mapToResponseDTO(Inventory inventory) {
         return new InventoryResponseDTO(
                 inventory.getInventoryId(),
@@ -34,6 +41,9 @@ public class InventoryServiceImpl implements InventoryService {
         );
     }
 
+    /**
+     * Converts request DTO to Inventory entity.
+     */
     private Inventory mapToEntity(InventoryRequestDTO dto) {
         return Inventory.builder()
                 .bookId(dto.getBookId())
@@ -41,8 +51,14 @@ public class InventoryServiceImpl implements InventoryService {
                 .build();
     }
 
-    // ===================== METHODS =====================
 
+    /**
+     * Adds new inventory after validation.
+     *
+     * @param request inventory details
+     * @return inventory details with generated id by repository
+     * @throws InvalidInventoryException if Inventory already exists
+     */
     @Override
     public InventoryResponseDTO addInventory(InventoryRequestDTO request) {
 
@@ -58,6 +74,13 @@ public class InventoryServiceImpl implements InventoryService {
         return mapToResponseDTO(saved);
     }
 
+    /**
+     * Retrieves inventory details for a given book ID.
+     *
+     * @param bookId unique book identifier
+     * @return inventory details
+     * @throws InventoryNotFoundException if no inventory is found
+     */
     @Override
     public InventoryResponseDTO getInventoryByBookId(long bookId) {
 
@@ -68,6 +91,12 @@ public class InventoryServiceImpl implements InventoryService {
         return mapToResponseDTO(inventory);
     }
 
+
+    /**
+     * Retrieves all inventory records.
+     *
+     * @return list of all inventory details
+     */
     @Override
     public List<InventoryResponseDTO> getAllInventory() {
 
@@ -77,6 +106,15 @@ public class InventoryServiceImpl implements InventoryService {
                 .toList();
     }
 
+    /**
+     * Updates the quantity of a book.
+     *
+     * @param bookId   book identifier
+     * @param quantity new quantity value
+     * @return updated inventory details
+     * @throws InvalidInventoryException  if quantity is negative
+     * @throws InventoryNotFoundException if inventory does not exist
+     */
     @Override
     @Transactional
     public InventoryResponseDTO updateQuantity(long bookId, int quantity) {
@@ -95,6 +133,12 @@ public class InventoryServiceImpl implements InventoryService {
         return mapToResponseDTO(repository.save(inventory));
     }
 
+    /**
+     * Deletes inventory for a given book ID.
+     *
+     * @param bookId book identifier
+     * @throws InventoryNotFoundException if inventory does not exist
+     */
     @Override
     @Transactional
     public void deleteInventory(long bookId) {
@@ -106,7 +150,12 @@ public class InventoryServiceImpl implements InventoryService {
         repository.deleteByBookId(bookId);
     }
 
-
+    /**
+     * Checks whether stock is below minimum level.
+     *
+     * @param bookId book identifier
+     * @return true if stock is low, otherwise false
+     */
     @Override
     public boolean isStockLow(long bookId) {
         return repository.findByBookId(bookId)
@@ -114,6 +163,12 @@ public class InventoryServiceImpl implements InventoryService {
                 .orElse(true);
     }
 
+    /**
+     * Retrieves stock availability details for a book.
+     *
+     * @param bookId book identifier
+     * @return availability information (empty if not found)
+     */
     @Override
     public AvailabilityDto getStockDetails(long bookId) {
 
@@ -133,6 +188,13 @@ public class InventoryServiceImpl implements InventoryService {
         return dto;
     }
 
+    /**
+     * Checks if requested quantity is unavailable in stock.
+     *
+     * @param bookId   book identifier
+     * @param orderQty requested quantity
+     * @return true if stock is insufficient, otherwise false
+     */
     @Override
     public boolean isOutOfStock(long bookId, int orderQty) {
         return repository.findByBookId(bookId)
@@ -140,6 +202,15 @@ public class InventoryServiceImpl implements InventoryService {
                 .orElse(true);
     }
 
+    /**
+     * Reduces the stock quantity safely using locking.
+     *
+     * @param bookId   book identifier
+     * @param quantity quantity to reduce
+     * @throws InvalidInventoryException  if quantity is invalid
+     * @throws InventoryNotFoundException if inventory not found
+     * @throws OutOfStockException        if stock is insufficient
+     */
     @Override
     @Transactional
     public void reduceStock(long bookId, int quantity) {
@@ -165,6 +236,16 @@ public class InventoryServiceImpl implements InventoryService {
 
         log.info("After reduce: bookId={}, quantity={}", bookId, inventory.getQuantity());
     }
+
+
+    /**
+     * Adds stock back to inventory safely using locking.
+     *
+     * @param bookId   book identifier
+     * @param quantity quantity to add
+     * @throws InvalidInventoryException  if quantity is less than or equal to zero
+     * @throws InventoryNotFoundException if inventory is not found
+     */
     @Override
     @Transactional
     public void releaseStock(long bookId, int quantity) {
@@ -188,8 +269,13 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
 
+    /**
+     * Retrieves all out-of-stock books.
+     *
+     * @return list of inventories with zero quantity
+     */
     @Override
-    public List<InventoryResponseDTO> allOutOfStockBooks(){
+    public List<InventoryResponseDTO> allOutOfStockBooks() {
         return repository.findAll()
                 .stream()
                 .filter(inv -> inv.getQuantity() == 0)
