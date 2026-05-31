@@ -62,7 +62,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Builds a standard error response.
+     * Builds a sta_ndard error response.
      *
      * @param message error message
      * @param status HTTP status

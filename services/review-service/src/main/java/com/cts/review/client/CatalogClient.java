@@ -8,13 +8,31 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-// name must match spring.application.name in catalog-service
+
+/**
+ * Feign client for communicating with the catalog-service.
+ */
 @FeignClient(name = "catalog-service")
 public interface CatalogClient {
 
+    /**
+     * Retrieves book details by book ID.
+     *
+     * @param bookId unique book identifier
+     * @return book details
+     */
     @GetMapping("/api/catalog/books/{bookId}")
     BookResponse getBookById(@PathVariable("bookId") Long bookId);
 
+
+    /**
+     * Searches books based on filters.
+     *
+     * @param title book title (optional)
+     * @param author book author (optional)
+     * @param category book category (optional)
+     * @return list of matching books
+     */
     @GetMapping("/api/catalog/books/search")
     List<BookResponse> searchBook(@RequestParam(required = false) String title,
                                   @RequestParam(required = false) String author,
