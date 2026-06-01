@@ -18,6 +18,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+
+/**
+ * Service implementation for managing review operations.
+*/
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -26,6 +30,13 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository repository;
     private final CatalogClient catalogClient;
 
+
+    /**
+     * Maps a {@link Review} entity to {@link ReviewResponseDTO}.
+     *
+     * @param review the review entity
+     * @return mapped ReviewResponseDTO
+     */
     private ReviewResponseDTO mapToDTO(Review review) {
         return new ReviewResponseDTO(
                 review.getReviewId(),
@@ -35,6 +46,14 @@ public class ReviewServiceImpl implements ReviewService {
                 review.getComment()
         );
     }
+
+    /**
+     * Maps a {@link Review} entity to {@link ReviewResponseWithBookDetails}.
+     * Fetches book details using Catalog Service with resilience.
+     *
+     * @param review the review entity
+     * @return detailed review response with book information, or null if fetch fails
+     */
     private ReviewResponseWithBookDetails mapToDetailedDto(Review review) {
         try {
             BookResponse bookResponse =
@@ -56,6 +75,12 @@ public class ReviewServiceImpl implements ReviewService {
         }
     }
 
+    /**
+     * Converts {@link ReviewRequestDTO} to {@link Review} entity.
+     *
+     * @param dto the incoming review request
+     * @return mapped Review entity
+     */
     private Review mapToEntity(ReviewRequestDTO dto) {
         return Review.builder()
                 .userId(dto.getUserId())
@@ -66,6 +91,14 @@ public class ReviewServiceImpl implements ReviewService {
                 .build();
     }
 
+
+    /**
+     * Adds a new review.
+     *
+     * @param request the review request
+     * @return created review response
+     * @throws InvalidReviewException if rating is invalid
+     */
     @Override
     public ReviewResponseDTO addReview(ReviewRequestDTO request) {
 
@@ -77,6 +110,17 @@ public class ReviewServiceImpl implements ReviewService {
         return mapToDTO(repository.save(review));
     }
 
+
+    /**
+     * Edits an existing review.
+     *
+     * @param reviewId the review ID
+     * @param userId   the user ID attempting to edit
+     * @param request  updated review data
+     * @return updated review response
+     * @throws ReviewNotFoundException if review does not exist
+     * @throws InvalidReviewException  if user is unauthorized or input is invalid
+     */
     @Override
     public ReviewResponseDTO editReview(Long reviewId, Long userId, ReviewRequestDTO request) {
 
@@ -101,6 +145,16 @@ public class ReviewServiceImpl implements ReviewService {
         return mapToDTO(repository.save(review));
     }
 
+
+    /**
+     * Moderates a review (admin operation).
+     *
+     * @param reviewId the review ID
+     * @param comment  the updated comment by admin
+     * @return moderated review response
+     * @throws InvalidReviewException  if comment is empty
+     * @throws ReviewNotFoundException if review not found
+     */
     @Override
     public ReviewResponseDTO moderateReview(Long reviewId, String comment) {
 
@@ -117,6 +171,14 @@ public class ReviewServiceImpl implements ReviewService {
         return mapToDTO(repository.save(review));
     }
 
+
+    /**
+     * Retrieves reviews by book ID.
+     *
+     * @param bookId the book ID
+     * @return list of review responses
+     * @throws ReviewNotFoundException if no reviews found
+     */
     @Override
     public List<ReviewResponseDTO> getReviewsByBookId(Long bookId) {
 
@@ -129,6 +191,14 @@ public class ReviewServiceImpl implements ReviewService {
         return reviews.stream().map(this::mapToDTO).toList();
     }
 
+
+    /**
+     * Retrieves reviews by user ID along with book details.
+     *
+     * @param userId the user ID
+     * @return list of detailed review responses
+     * @throws ReviewNotFoundException if no reviews found
+     */
     @Override
     public List<ReviewResponseWithBookDetails> getReviewsByUserId(Long userId) {
 
@@ -141,6 +211,13 @@ public class ReviewServiceImpl implements ReviewService {
         return reviews.stream().map(this::mapToDetailedDto).toList();
     }
 
+
+    /**
+     * Retrieves all reviews along with book details.
+     *
+     * @return list of all reviews
+     * @throws ReviewOperationException if no reviews exist
+     */
     @Override
     public List<ReviewResponseWithBookDetails> getAllReviews() {
 
@@ -153,6 +230,16 @@ public class ReviewServiceImpl implements ReviewService {
         return reviews.stream().map(this::mapToDetailedDto).toList();
     }
 
+
+    /**
+     * Fetches book details from Catalog Service with resilience.
+     * <p>
+     * Uses Retry and TimeLimiter for fault tolerance.
+     * </p>
+     *
+     * @param bookId the book ID
+     * @return CompletableFuture containing book response
+     */
     @Retry(name = "catalogService", fallbackMethod = "catalogFallback")
     @TimeLimiter(name = "catalogService")
     public CompletableFuture<BookResponse> getBookWithResilience(Long bookId) {
@@ -161,6 +248,14 @@ public class ReviewServiceImpl implements ReviewService {
         );
     }
 
+
+    /**
+     * Fallback method when Catalog Service fails.
+     *
+     * @param bookId the book ID
+     * @param ex     the exception that caused failure
+     * @return throws CatalogServiceDownException
+     */
     public CompletableFuture<BookResponse> catalogFallback(Long bookId, Throwable ex) {
         throw new CatalogServiceDownException("Catalog service down. Cant fetch book with id : " + bookId + " exception: " + ex.getMessage());
     }
