@@ -12,11 +12,21 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+
+/**
+ * Global exception handler for the Review Service.
+*/
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Not Found
+
+    /**
+     * Handles cases where a review is not found.
+     *
+     * @param ex the exception thrown
+     * @return standardized error response with HTTP 404
+     */
     @ExceptionHandler(ReviewNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(ReviewNotFoundException ex) {
         return new ResponseEntity<>(
@@ -25,7 +35,13 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // Invalid Input
+
+    /**
+     * Handles invalid review input scenarios.
+     *
+     * @param ex the exception thrown
+     * @return standardized error response with HTTP 400
+     */
     @ExceptionHandler(InvalidReviewException.class)
     public ResponseEntity<ErrorResponse> handleInvalid(InvalidReviewException ex) {
         return new ResponseEntity<>(
@@ -34,7 +50,13 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // Business Failure
+
+    /**
+     * Handles business-level failures during review operations.
+     *
+     * @param ex the exception thrown
+     * @return standardized error response with HTTP 500
+     */
     @ExceptionHandler(ReviewOperationException.class)
     public ResponseEntity<ErrorResponse> handleOperation(ReviewOperationException ex) {
         return new ResponseEntity<>(
@@ -43,6 +65,14 @@ public class GlobalExceptionHandler {
         );
     }
 
+
+    /**
+     * Handles failures related to communication with the Catalog Service.
+     *
+     * @param ex  the exception thrown
+     * @param req HTTP request details
+     * @return standardized error response with HTTP 503
+     */
     @ExceptionHandler(CatalogServiceDownException.class)
     public ResponseEntity<ErrorResponse> handleCatalogDown(
             CatalogServiceDownException ex,
@@ -55,7 +85,13 @@ public class GlobalExceptionHandler {
                 HttpStatus.SERVICE_UNAVAILABLE), HttpStatus.SERVICE_UNAVAILABLE);
     }
 
-    // Generic fallback (VERY IMPORTANT)
+
+    /**
+     * Handles all uncaught exceptions (fallback handler).
+     *
+     * @param ex the exception thrown
+     * @return standardized error response with HTTP 500
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
         return new ResponseEntity<>(
@@ -64,7 +100,14 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // Reusable builder
+
+    /**
+     * Builds a standardized {@link ErrorResponse}.
+     *
+     * @param message error message
+     * @param status  HTTP status
+     * @return populated ErrorResponse object
+     */
     private ErrorResponse buildError(String message, HttpStatus status) {
         return new ErrorResponse(
                 LocalDateTime.now(),
