@@ -49,6 +49,16 @@ public class BookServiceImpl implements BookService {
     private final CategoryRepository categoryRepository;
     private final InventoryClient inventoryClient;
 
+
+    /**
+     * Adds a new book to the catalog.
+     *
+     * <p>Validates price, checks author & category existence,
+     * prevents duplicate books (title + author), and persists the book.</p>
+     *
+     * @param request book creation request
+     * @return created {@link BookResponse}
+     */
     @Override
     @Transactional
     public BookResponse addBook(BookRequest request) {
@@ -79,6 +89,16 @@ public class BookServiceImpl implements BookService {
         return toResponse(saved, fetchStock(saved.getBookId()));
     }
 
+
+    /**
+     * Updates an existing book.
+     *
+     * <p>Supports partial updates for title, price, author, and category.</p>
+     *
+     * @param bookId  book identifier
+     * @param request updated book details
+     * @return updated {@link BookResponse}
+     */
     @Override
     @Transactional
     public BookResponse updateBook(Long bookId, BookRequest request) {
@@ -115,6 +135,13 @@ public class BookServiceImpl implements BookService {
         return toResponse(saved, fetchStock(saved.getBookId()));
     }
 
+
+    /**
+     * Deletes a book from the catalog.
+     *
+     * @param bookId book identifier
+     * @throws BookDeletionException if deletion fails due to DB issues
+     */
     @Override
     @Transactional
     public void deleteBook(Long bookId) {
@@ -128,6 +155,15 @@ public class BookServiceImpl implements BookService {
         }
     }
 
+
+    /**
+     * Retrieves a single book by ID along with stock details.
+     *
+     * <p>Uses Circuit Breaker to handle inventory service failures.</p>
+     *
+     * @param bookId book identifier
+     * @return {@link BookResponse}
+     */
     @Override
     @Transactional(readOnly = true)
     @CircuitBreaker(name = "inventoryService", fallbackMethod = "inventoryFallback")
@@ -139,6 +175,12 @@ public class BookServiceImpl implements BookService {
         return toResponse(book, fetchStock(bookId));
     }
 
+
+    /**
+     * Retrieves paginated list of books with sorting.
+     *
+     * <p>Supports dynamic sorting and integrates stock availability check.</p>
+     */
     @Override
     @Transactional(readOnly = true)
     @CircuitBreaker(name = "inventoryService", fallbackMethod = "listBooksFallback")
@@ -155,6 +197,12 @@ public class BookServiceImpl implements BookService {
                 .toList();
     }
 
+
+    /**
+     * Searches books based on title, author, and category filters.
+     *
+     * <p>Supports flexible combinations of search parameters.</p>
+     */
     @Override
     @Transactional(readOnly = true)
     public List<BookResponse> searchBooks(String title, String author, String category) {
@@ -190,17 +238,27 @@ public class BookServiceImpl implements BookService {
                 .toList();
     }
 
+
+    /**
+     * Validates that book price is greater than zero.
+     */
     private void validatePrice(BigDecimal price) {
         if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidBookDataException("Price must be greater than zero");
         }
     }
 
+    /**
+     * Fetches stock availability from Inventory Service.
+     */
     private int fetchStock(Long bookId) {
         AvailabilityDto stock = inventoryClient.checkAvailability(bookId);
         return stock.getAvailableQuantity();
     }
 
+    /**
+     * Converts Book entity into response DTO.
+     */
     private BookResponse toResponse(Book b, int stock) {
         return BookResponse.builder()
                 .bookId(b.getBookId())
@@ -212,6 +270,9 @@ public class BookServiceImpl implements BookService {
                 .build();
     }
 
+    /**
+     * Asynchronously fetches availability details with retry and timeout.
+     */
     @Retry(name = "inventoryService", fallbackMethod = "inventoryFallback")
     @TimeLimiter(name = "inventoryService")
     private CompletableFuture<Integer> getAvailabilityDetails(Long bookId) {
@@ -219,10 +280,17 @@ public class BookServiceImpl implements BookService {
     }
 
 
+    /**
+     * Fallback for inventory service failure.
+     */
     public CompletableFuture<AvailabilityDto> inventoryFallback(Long bookId, Throwable ex) {
         throw new InventoryServiceDownException("Inventory service unavailable for bookId: " + bookId + ex);
     }
 
+
+    /**
+     * Fallback for listBooks operation when inventory service fails.
+     */
     public List<BookResponse> listBooksFallback(Throwable ex) {
 
         log.error("Inventory service failed while listing books", ex);

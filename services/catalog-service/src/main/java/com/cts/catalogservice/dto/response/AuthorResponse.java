@@ -6,7 +6,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
+/**
+ * DTO representing the response payload for an Author.
+ *
+ * <p>This object is used to transfer author data from the server
+ * to the client.</p>
+ *
+ * <p>Contains basic details such as author identifier and name.</p>
+*/
+ @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor

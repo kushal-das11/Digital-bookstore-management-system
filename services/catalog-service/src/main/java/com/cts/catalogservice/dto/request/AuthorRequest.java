@@ -8,6 +8,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * DTO for creating an Author.
+ *
+ * <p>Validation Rules:</p>
+ * <ul>
+ *     <li>authorName must not be blank</li>
+ *     <li>Maximum length: 150 characters</li>
+ * </ul>
+ */
 @Getter
 @Setter
 @NoArgsConstructor

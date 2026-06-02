@@ -11,6 +11,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
+/**
+ * DTO for creating or updating a Book.
+ *
+ * <p>Validation Rules:</p>
+ * <ul>
+ *     <li>title must not be blank (max 200 chars)</li>
+ *     <li>price must be greater than 0</li>
+ *     <li>authorId must not be null</li>
+ *     <li>categoryId must not be null</li>
+ * </ul>
+ */
 @Getter
 @Setter
 @NoArgsConstructor

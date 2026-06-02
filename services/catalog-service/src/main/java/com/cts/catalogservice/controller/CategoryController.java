@@ -11,6 +11,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
+/**
+ * REST controller for managing book categories.
+ *
+ * <p>Allows creation and retrieval of categories.</p>
+ */
 @RestController
 @RequestMapping("/api/catalog/categories")
 @RequiredArgsConstructor
@@ -18,11 +24,23 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
+    /**
+     * Retrieves all categories.
+     *
+     * @return list of {@link CategoryResponse}
+     */
     @GetMapping
     public ResponseEntity<List<CategoryResponse>> listCategories() {
         return ResponseEntity.ok(categoryService.listCategories());
     }
 
+
+    /**
+     * Adds a new category.
+     *
+     * @param request validated category request
+     * @return created {@link CategoryResponse}
+     */
     @PostMapping
     public ResponseEntity<CategoryResponse> addCategory(@Valid @RequestBody CategoryRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)

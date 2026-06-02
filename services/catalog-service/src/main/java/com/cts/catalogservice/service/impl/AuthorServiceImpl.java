@@ -11,6 +11,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+/**
+ * Implementation of {@link AuthorService}.
+ *
+ * <p>Handles business logic for managing authors including
+ * creation and retrieval.</p>
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -18,6 +25,14 @@ public class AuthorServiceImpl implements AuthorService {
 
     private final AuthorRepository authorRepository;
 
+
+    /**
+     * Creates a new author or returns an existing author
+     * if a match is found (case-insensitive).
+     *
+     * @param request author creation request
+     * @return author response
+     */
     @Override
     @Transactional
     public AuthorResponse addAuthor(AuthorRequest request) {
@@ -31,12 +46,25 @@ public class AuthorServiceImpl implements AuthorService {
                 });
     }
 
+
+    /**
+     * Retrieves all authors.
+     *
+     * @return list of authors
+     */
     @Override
     @Transactional(readOnly = true)
     public List<AuthorResponse> listAuthors() {
         return authorRepository.findAll().stream().map(this::toResponse).toList();
     }
 
+
+    /**
+     * Converts {@link Author} entity to {@link AuthorResponse}.
+     *
+     * @param {author}  entity object
+     * @return response DTO
+     */
     private AuthorResponse toResponse(Author a) {
         return AuthorResponse.builder()
                 .authorId(a.getAuthorId())
