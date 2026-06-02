@@ -3,6 +3,7 @@ package com.cts.review.controller;
 import com.cts.review.dto.*;
 import com.cts.review.service.ReviewService;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,7 +35,7 @@ public class ReviewController {
     public ResponseEntity<ReviewResponseDTO> addReview(
             @Parameter(hidden = true)
             @RequestHeader("X-User-Id") String userId,
-            @RequestBody ReviewRequestDTO request) {
+            @RequestBody @Valid ReviewRequestDTO request) {
         request.setUserId(Long.valueOf(userId));
         return ResponseEntity.ok(service.addReview(request));
     }
@@ -53,7 +54,7 @@ public class ReviewController {
             @Parameter(hidden = true)
             @RequestHeader("X-User-Id") String userId,
             @PathVariable Long reviewId,
-            @RequestBody ReviewRequestDTO request) {
+            @RequestBody @Valid ReviewRequestDTO request) {
         return ResponseEntity.ok(service.editReview(reviewId, Long.valueOf(userId), request));
     }
 

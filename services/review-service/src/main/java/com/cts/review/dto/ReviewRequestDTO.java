@@ -12,10 +12,6 @@ import lombok.*;
 @AllArgsConstructor
 public class ReviewRequestDTO {
 
-    /**
-     * Unique identifier of the user submitting the review.
-     */
-    @NotNull(message = "User ID cannot be null")
     private Long userId;
 
 

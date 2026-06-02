@@ -5,6 +5,7 @@ import com.cts.inventory.dto.InventoryRequestDTO;
 import com.cts.inventory.dto.InventoryResponseDTO;
 import com.cts.inventory.dto.ReserveRequest;
 import com.cts.inventory.service.InventoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,7 @@ public class InventoryController {
      * @return created inventory details
      */
     @PostMapping
-    public ResponseEntity<InventoryResponseDTO> addInventory(@RequestBody InventoryRequestDTO request) {
+    public ResponseEntity<InventoryResponseDTO> addInventory(@RequestBody @Valid InventoryRequestDTO request) {
         return ResponseEntity.ok(service.addInventory(request));
     }
 
@@ -42,7 +43,7 @@ public class InventoryController {
      * @return success message
      */
     @PutMapping("/reduce")
-    public ResponseEntity<String> reduceStock(@RequestBody ReserveRequest reserveRequest) {
+    public ResponseEntity<String> reduceStock(@RequestBody @Valid ReserveRequest reserveRequest) {
         service.reduceStock(reserveRequest.getBookId(), reserveRequest.getQuantity());
         return ResponseEntity.ok("Stock reduced successfully");
     }
@@ -55,7 +56,7 @@ public class InventoryController {
      * @return success message
      */
     @PutMapping("/release")
-    public ResponseEntity<String> releaseStock(@RequestBody ReserveRequest request) {
+    public ResponseEntity<String> releaseStock(@RequestBody @Valid ReserveRequest request) {
         service.releaseStock(request.getBookId(), request.getQuantity());
         return ResponseEntity.ok("Stock released");
     }
