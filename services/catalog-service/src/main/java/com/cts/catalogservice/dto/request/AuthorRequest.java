@@ -1,0 +1,30 @@
+package com.cts.catalogservice.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+/**
+ * DTO for creating an Author.
+ *
+ * <p>Validation Rules:</p>
+ * <ul>
+ *     <li>authorName must not be blank</li>
+ *     <li>Maximum length: 150 characters</li>
+ * </ul>
+ */
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class AuthorRequest {
+
+    @NotBlank(message = "Author name is required")
+    @Size(max = 150, message = "Author name must be at most 150 characters")
+    private String authorName;
+}
