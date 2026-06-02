@@ -1,0 +1,524 @@
+Index: services/inventory-service/src/test/java/com/cts/inventory/InventoryTest.java
+===================================================================
+diff --git a/services/inventory-service/src/test/java/com/cts/inventory/InventoryTest.java b/services/inventory-service/src/test/java/com/cts/inventory/InventoryTest.java
+deleted file mode 100644
+--- a/services/inventory-service/src/test/java/com/cts/inventory/InventoryTest.java	(revision b2f5ddcfdb7c89fad69ba4ec45ed54931ceb48a4)
++++ /dev/null	(revision b2f5ddcfdb7c89fad69ba4ec45ed54931ceb48a4)
+@@ -1,235 +0,0 @@
+-package com.cts.inventory;
+-
+-import com.cts.inventory.dto.*;
+-import com.cts.inventory.exception.customexception.*;
+-import com.cts.inventory.model.Inventory;
+-import com.cts.inventory.repository.InventoryRepository;
+-import com.cts.inventory.service.impl.InventoryServiceImpl;
+-
+-import org.junit.jupiter.api.BeforeEach;
+-import org.junit.jupiter.api.Test;
+-import org.junit.jupiter.api.extension.ExtendWith;
+-import org.mockito.*;
+-import org.mockito.junit.jupiter.MockitoExtension;
+-
+-import java.util.*;
+-
+-import static org.junit.jupiter.api.Assertions.*;
+-import static org.mockito.Mockito.*;
+-
+-@ExtendWith(MockitoExtension.class)
+-class InventoryTest {
+-
+-    @Mock
+-    private InventoryRepository repository;
+-
+-    @InjectMocks
+-    private InventoryServiceImpl service;
+-
+-    private Inventory inventory;
+-
+-    @BeforeEach
+-    void setUp() {
+-        inventory = Inventory.builder()
+-                .inventoryId(1L)
+-                .bookId(100L)
+-                .quantity(10)
+-                .build();
+-    }
+-
+-    // ================== ADD INVENTORY ==================
+-    @Test
+-    void test_addInventory_success() {
+-        InventoryRequestDTO request = new InventoryRequestDTO(100L, 10);
+-
+-        when(repository.existsByBookId(100L)).thenReturn(false);
+-        when(repository.save(any())).thenReturn(inventory);
+-
+-        InventoryResponseDTO response = service.addInventory(request);
+-
+-        assertNotNull(response);
+-        assertEquals(100L, response.getBookId());
+-    }
+-
+-    @Test
+-    void test_addInventory_invalidQuantity() {
+-        InventoryRequestDTO request = new InventoryRequestDTO(100L, 0);
+-
+-        assertThrows(InvalidInventoryException.class,
+-                () -> service.addInventory(request));
+-    }
+-
+-    @Test
+-    void test_addInventory_duplicate() {
+-        when(repository.existsByBookId(100L)).thenReturn(true);
+-
+-        InventoryRequestDTO request = new InventoryRequestDTO(100L, 5);
+-
+-        assertThrows(InvalidInventoryException.class,
+-                () -> service.addInventory(request));
+-    }
+-
+-    // ================== GET BY BOOK ID ==================
+-    @Test
+-    void test_getInventory_success() {
+-        when(repository.findByBookId(100L))
+-                .thenReturn(Optional.of(inventory));
+-
+-        InventoryResponseDTO response = service.getInventoryByBookId(100L);
+-
+-        assertEquals(100L, response.getBookId());
+-    }
+-
+-    @Test
+-    void test_getInventory_notFound() {
+-        when(repository.findByBookId(100L))
+-                .thenReturn(Optional.empty());
+-
+-        assertThrows(InventoryNotFoundException.class,
+-                () -> service.getInventoryByBookId(100L));
+-    }
+-
+-    // ================== GET ALL ==================
+-    @Test
+-    void test_getAllInventory() {
+-        when(repository.findAll()).thenReturn(List.of(inventory));
+-
+-        List<InventoryResponseDTO> list = service.getAllInventory();
+-
+-        assertEquals(1, list.size());
+-    }
+-
+-    // ================== UPDATE ==================
+-    @Test
+-    void test_updateQuantity_success() {
+-        when(repository.findByBookId(100L))
+-                .thenReturn(Optional.of(inventory));
+-
+-        when(repository.save(any())).thenReturn(inventory);
+-
+-        InventoryResponseDTO response = service.updateQuantity(100L, 5);
+-
+-        assertEquals(100L, response.getBookId());
+-    }
+-
+-    @Test
+-    void test_updateQuantity_invalid() {
+-        assertThrows(InvalidInventoryException.class,
+-                () -> service.updateQuantity(100L, -1));
+-    }
+-
+-    @Test
+-    void test_updateQuantity_notFound() {
+-        when(repository.findByBookId(100L))
+-                .thenReturn(Optional.empty());
+-
+-        assertThrows(InventoryNotFoundException.class,
+-                () -> service.updateQuantity(100L, 5));
+-    }
+-
+-    // ================== DELETE ==================
+-    @Test
+-    void test_delete_success() {
+-        when(repository.existsByBookId(100L)).thenReturn(true);
+-
+-        service.deleteInventory(100L);
+-
+-        verify(repository).deleteByBookId(100L);
+-    }
+-
+-    @Test
+-    void test_delete_notFound() {
+-        when(repository.existsByBookId(100L)).thenReturn(false);
+-
+-        assertThrows(InventoryNotFoundException.class,
+-                () -> service.deleteInventory(100L));
+-    }
+-
+-    // ================== STOCK CHECK ==================
+-    @Test
+-    void test_isStockLow_true() {
+-        inventory.setQuantity(0);
+-
+-        when(repository.findByBookId(100L))
+-                .thenReturn(Optional.of(inventory));
+-
+-        assertTrue(service.isStockLow(100L));
+-    }
+-
+-    @Test
+-    void test_isStockLow_notFound() {
+-        when(repository.findByBookId(100L))
+-                .thenReturn(Optional.empty());
+-
+-        assertTrue(service.isStockLow(100L));
+-    }
+-
+-    // ================== STOCK DETAILS ==================
+-    @Test
+-    void test_getStockDetails_success() {
+-        when(repository.findByBookId(100L))
+-                .thenReturn(Optional.of(inventory));
+-
+-        AvailabilityDto dto = service.getStockDetails(100L);
+-
+-        assertEquals(100L, dto.getBookId());
+-        assertTrue(dto.isInStock());
+-    }
+-
+-    // ================== OUT OF STOCK ==================
+-    @Test
+-    void test_isOutOfStock_true() {
+-        inventory.setQuantity(2);
+-
+-        when(repository.findByBookId(100L))
+-                .thenReturn(Optional.of(inventory));
+-
+-        assertTrue(service.isOutOfStock(100L, 5));
+-    }
+-
+-    // ================== REDUCE STOCK ==================
+-    @Test
+-    void test_reduceStock_success() {
+-        when(repository.findByBookIdForUpdate(100L))
+-                .thenReturn(Optional.of(inventory));
+-
+-        service.reduceStock(100L, 5);
+-
+-        verify(repository).save(any());
+-    }
+-
+-    @Test
+-    void test_reduceStock_insufficient() {
+-        inventory.setQuantity(2);
+-
+-        when(repository.findByBookIdForUpdate(100L))
+-                .thenReturn(Optional.of(inventory));
+-
+-        assertThrows(OutOfStockException.class,
+-                () -> service.reduceStock(100L, 5));
+-    }
+-
+-    // ================== RELEASE STOCK ==================
+-    @Test
+-    void test_releaseStock_success() {
+-        when(repository.findByBookIdForUpdate(100L))
+-                .thenReturn(Optional.of(inventory));
+-
+-        service.releaseStock(100L, 5);
+-
+-        verify(repository).save(any());
+-    }
+-
+-    // ================== OUT OF STOCK LIST ==================
+-    @Test
+-    void test_allOutOfStockBooks() {
+-        inventory.setQuantity(0);
+-
+-        when(repository.findAll())
+-                .thenReturn(List.of(inventory));
+-
+-        List<InventoryResponseDTO> list = service.allOutOfStockBooks();
+-
+-        assertEquals(1, list.size());
+-    }
+-}
+\ No newline at end of file
+Index: services/review-service/src/test/java/com/cts/review/ReviewControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cts.review;\r\n\r\nimport com.cts.review.controller.ReviewController;\r\nimport com.cts.review.dto.*;\r\nimport com.cts.review.service.ReviewService;\r\nimport com.fasterxml.jackson.databind.ObjectMapper;\r\nimport org.junit.jupiter.api.Test;\r\nimport org.springframework.beans.factory.annotation.Autowired;\r\nimport org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;\r\nimport org.springframework.http.MediaType;\r\nimport org.springframework.test.context.bean.override.mockito.MockitoBean;\r\nimport org.springframework.test.web.servlet.MockMvc;\r\n\r\nimport java.util.List;\r\n\r\nimport static org.mockito.Mockito.when;\r\nimport static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;\r\nimport static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;\r\n\r\n/**\r\n * Unit test class for {@link ReviewController}.\r\n * <p>\r\n * This class uses Spring's {@link WebMvcTest} to test only the controller layer\r\n * in isolation by mocking the {@link ReviewService}.\r\n * </p>\r\n * <p>\r\n * It validates HTTP request handling, response structure, and integration\r\n * between Controller and Service layers.\r\n * </p>\r\n */\r\n@WebMvcTest(ReviewController.class)\r\nclass ReviewControllerTest {\r\n\r\n    @Autowired\r\n    private MockMvc mockMvc;\r\n\r\n    @MockitoBean\r\n    private ReviewService service;\r\n\r\n    @Autowired\r\n    private ObjectMapper objectMapper;\r\n\r\n    /**\r\n     * Tests successful creation of a review.\r\n     */\r\n    @Test\r\n    void addReview_success() throws Exception {\r\n\r\n        ReviewRequestDTO request = new ReviewRequestDTO(null, 100L, 5, \"Excellent\");\r\n\r\n        ReviewResponseDTO response =\r\n                new ReviewResponseDTO(1L, 1L, 100L, 5, \"Excellent\");\r\n\r\n        when(service.addReview(org.mockito.ArgumentMatchers.any()))\r\n                .thenReturn(response);\r\n\r\n        mockMvc.perform(post(\"/api/reviews\")\r\n                        .header(\"X-User-Id\", \"1\")\r\n                        .contentType(MediaType.APPLICATION_JSON)\r\n                        .content(objectMapper.writeValueAsString(request)))\r\n                .andExpect(status().isOk())\r\n                .andExpect(jsonPath(\"$.reviewId\").value(1L))\r\n                .andExpect(jsonPath(\"$.rating\").value(5));\r\n    }\r\n\r\n    /**\r\n     * Tests editing a review successfully.\r\n     */\r\n    @Test\r\n    void editReview_success() throws Exception {\r\n\r\n        ReviewRequestDTO request = new ReviewRequestDTO(null, 100L, 4, \"Updated\");\r\n\r\n        ReviewResponseDTO response =\r\n                new ReviewResponseDTO(1L, 1L, 100L, 4, \"Updated\");\r\n\r\n        when(service.editReview(org.mockito.ArgumentMatchers.eq(1L),\r\n                org.mockito.ArgumentMatchers.eq(1L),\r\n                org.mockito.ArgumentMatchers.any()))\r\n                .thenReturn(response);\r\n\r\n        mockMvc.perform(put(\"/api/reviews/1/edit\")\r\n                        .header(\"X-User-Id\", \"1\")\r\n                        .contentType(MediaType.APPLICATION_JSON)\r\n                        .content(objectMapper.writeValueAsString(request)))\r\n                .andExpect(status().isOk())\r\n                .andExpect(jsonPath(\"$.rating\").value(4));\r\n    }\r\n\r\n    /**\r\n     * Tests moderating a review.\r\n     */\r\n    @Test\r\n    void moderateReview_success() throws Exception {\r\n\r\n        ReviewResponseDTO response =\r\n                new ReviewResponseDTO(1L, 1L, 100L, 5, \"Admin modified\");\r\n\r\n        when(service.moderateReview(1L, \"Admin modified\"))\r\n                .thenReturn(response);\r\n\r\n        mockMvc.perform(put(\"/api/reviews/1/moderate\")\r\n                        .param(\"comment\", \"Admin modified\"))\r\n                .andExpect(status().isOk())\r\n                .andExpect(jsonPath(\"$.comment\").value(\"Admin modified\"));\r\n    }\r\n\r\n    /**\r\n     * Tests fetching reviews by book ID.\r\n     */\r\n    @Test\r\n    void getByBook_success() throws Exception {\r\n\r\n        List<ReviewResponseDTO> list = List.of(\r\n                new ReviewResponseDTO(1L, 1L, 100L, 5, \"Good\")\r\n        );\r\n\r\n        when(service.getReviewsByBookId(100L)).thenReturn(list);\r\n\r\n        mockMvc.perform(get(\"/api/reviews/book/100\"))\r\n                .andExpect(status().isOk())\r\n                .andExpect(jsonPath(\"$[0].reviewId\").value(1L));\r\n    }\r\n\r\n    /**\r\n     * Tests fetching reviews by user ID.\r\n     */\r\n    @Test\r\n    void getByUser_success() throws Exception {\r\n\r\n        ReviewResponseWithBookDetails response = new ReviewResponseWithBookDetails();\r\n        response.setUserId(1L);\r\n\r\n        when(service.getReviewsByUserId(1L))\r\n                .thenReturn(List.of(response));\r\n\r\n        mockMvc.perform(get(\"/api/reviews/user\")\r\n                        .header(\"X-User-Id\", \"1\"))\r\n                .andExpect(status().isOk())\r\n                .andExpect(jsonPath(\"$[0].userId\").value(1L));\r\n    }\r\n\r\n    /**\r\n     * Tests fetching all reviews.\r\n     */\r\n    @Test\r\n    void getAll_success() throws Exception {\r\n\r\n        ReviewResponseWithBookDetails response = new ReviewResponseWithBookDetails();\r\n        response.setUserId(1L);\r\n\r\n        when(service.getAllReviews()).thenReturn(List.of(response));\r\n\r\n        mockMvc.perform(get(\"/api/reviews\"))\r\n                .andExpect(status().isOk())\r\n                .andExpect(jsonPath(\"$[0].userId\").value(1L));\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/services/review-service/src/test/java/com/cts/review/ReviewControllerTest.java b/services/review-service/src/test/java/com/cts/review/ReviewControllerTest.java
+--- a/services/review-service/src/test/java/com/cts/review/ReviewControllerTest.java	(revision b2f5ddcfdb7c89fad69ba4ec45ed54931ceb48a4)
++++ b/services/review-service/src/test/java/com/cts/review/ReviewControllerTest.java	(date 1780374070416)
+@@ -2,157 +2,192 @@
+ 
+ import com.cts.review.controller.ReviewController;
+ import com.cts.review.dto.*;
++import com.cts.review.exception.GlobalExceptionHandler;
++import com.cts.review.exception.customexception.ReviewNotFoundException;
+ import com.cts.review.service.ReviewService;
+ import com.fasterxml.jackson.databind.ObjectMapper;
++import org.junit.jupiter.api.BeforeEach;
+ import org.junit.jupiter.api.Test;
+-import org.springframework.beans.factory.annotation.Autowired;
+-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
++import org.junit.jupiter.api.extension.ExtendWith;
++import org.mockito.InjectMocks;
++import org.mockito.Mock;
++import org.mockito.junit.jupiter.MockitoExtension;
+ import org.springframework.http.MediaType;
+-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+ import org.springframework.test.web.servlet.MockMvc;
++import org.springframework.test.web.servlet.setup.MockMvcBuilders;
++import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+ 
+ import java.util.List;
+ 
+-import static org.mockito.Mockito.when;
++import static org.mockito.ArgumentMatchers.*;
++import static org.mockito.Mockito.*;
+ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+ 
+ /**
+- * Unit test class for {@link ReviewController}.
+- * <p>
+- * This class uses Spring's {@link WebMvcTest} to test only the controller layer
+- * in isolation by mocking the {@link ReviewService}.
+- * </p>
+- * <p>
+- * It validates HTTP request handling, response structure, and integration
+- * between Controller and Service layers.
+- * </p>
++ * Unit tests for ReviewController.
++ * Covers success, validation, and exception scenarios.
+  */
+-@WebMvcTest(ReviewController.class)
++@ExtendWith(MockitoExtension.class)
+ class ReviewControllerTest {
+ 
+-    @Autowired
+-    private MockMvc mockMvc;
+-
+-    @MockitoBean
++    @Mock
+     private ReviewService service;
+ 
+-    @Autowired
++    @InjectMocks
++    private ReviewController controller;
++
++    private MockMvc mockMvc;
+     private ObjectMapper objectMapper;
+ 
++    private ReviewRequestDTO validRequest;
++    private ReviewResponseDTO response;
++
++    @BeforeEach
++    void setUp() {
++        mockMvc = MockMvcBuilders.standaloneSetup(controller)
++                .setControllerAdvice(new GlobalExceptionHandler())
++                .setValidator(new LocalValidatorFactoryBean())
++                .build();
++
++        objectMapper = new ObjectMapper();
++
++        validRequest = new ReviewRequestDTO(null, 100L, 5, "Excellent");
++
++        response = new ReviewResponseDTO(1L, 1L, 100L, 5, "Excellent");
++    }
++
+     /**
+-     * Tests successful creation of a review.
++     * Tests successful review creation.
+      */
+     @Test
+     void addReview_success() throws Exception {
+-
+-        ReviewRequestDTO request = new ReviewRequestDTO(null, 100L, 5, "Excellent");
+-
+-        ReviewResponseDTO response =
+-                new ReviewResponseDTO(1L, 1L, 100L, 5, "Excellent");
+-
+-        when(service.addReview(org.mockito.ArgumentMatchers.any()))
+-                .thenReturn(response);
++        when(service.addReview(any())).thenReturn(response);
+ 
+         mockMvc.perform(post("/api/reviews")
+                         .header("X-User-Id", "1")
+                         .contentType(MediaType.APPLICATION_JSON)
+-                        .content(objectMapper.writeValueAsString(request)))
++                        .content(objectMapper.writeValueAsString(validRequest)))
+                 .andExpect(status().isOk())
+-                .andExpect(jsonPath("$.reviewId").value(1L))
++                .andExpect(jsonPath("$.reviewId").value(1))
+                 .andExpect(jsonPath("$.rating").value(5));
++
++        verify(service).addReview(any());
+     }
+ 
+     /**
+-     * Tests editing a review successfully.
++     * Tests successful review edit by owner.
+      */
+     @Test
+     void editReview_success() throws Exception {
+-
+-        ReviewRequestDTO request = new ReviewRequestDTO(null, 100L, 4, "Updated");
+-
+-        ReviewResponseDTO response =
+-                new ReviewResponseDTO(1L, 1L, 100L, 4, "Updated");
+-
+-        when(service.editReview(org.mockito.ArgumentMatchers.eq(1L),
+-                org.mockito.ArgumentMatchers.eq(1L),
+-                org.mockito.ArgumentMatchers.any()))
+-                .thenReturn(response);
++        when(service.editReview(eq(1L), eq(1L), any())).thenReturn(response);
+ 
+         mockMvc.perform(put("/api/reviews/1/edit")
+                         .header("X-User-Id", "1")
+                         .contentType(MediaType.APPLICATION_JSON)
+-                        .content(objectMapper.writeValueAsString(request)))
+-                .andExpect(status().isOk())
+-                .andExpect(jsonPath("$.rating").value(4));
++                        .content(objectMapper.writeValueAsString(validRequest)))
++                .andExpect(status().isOk());
++
++        verify(service).editReview(eq(1L), eq(1L), any());
+     }
+ 
+     /**
+-     * Tests moderating a review.
++     * Tests successful moderation.
+      */
+     @Test
+     void moderateReview_success() throws Exception {
+-
+-        ReviewResponseDTO response =
+-                new ReviewResponseDTO(1L, 1L, 100L, 5, "Admin modified");
+-
+-        when(service.moderateReview(1L, "Admin modified"))
+-                .thenReturn(response);
++        when(service.moderateReview(1L, "Updated")).thenReturn(response);
+ 
+         mockMvc.perform(put("/api/reviews/1/moderate")
+-                        .param("comment", "Admin modified"))
+-                .andExpect(status().isOk())
+-                .andExpect(jsonPath("$.comment").value("Admin modified"));
++                        .param("comment", "Updated"))
++                .andExpect(status().isOk());
++
++        verify(service).moderateReview(1L, "Updated");
+     }
+ 
+     /**
+-     * Tests fetching reviews by book ID.
++     * Tests fetching reviews by book.
+      */
+     @Test
+     void getByBook_success() throws Exception {
+-
+-        List<ReviewResponseDTO> list = List.of(
+-                new ReviewResponseDTO(1L, 1L, 100L, 5, "Good")
+-        );
+-
+-        when(service.getReviewsByBookId(100L)).thenReturn(list);
++        when(service.getReviewsByBookId(100L))
++                .thenReturn(List.of(response));
+ 
+         mockMvc.perform(get("/api/reviews/book/100"))
+                 .andExpect(status().isOk())
+-                .andExpect(jsonPath("$[0].reviewId").value(1L));
++                .andExpect(jsonPath("$[0].reviewId").value(1));
+     }
+ 
+     /**
+-     * Tests fetching reviews by user ID.
++     * Tests fetching reviews by user.
+      */
+     @Test
+     void getByUser_success() throws Exception {
+-
+-        ReviewResponseWithBookDetails response = new ReviewResponseWithBookDetails();
+-        response.setUserId(1L);
++        ReviewResponseWithBookDetails dto = new ReviewResponseWithBookDetails();
++        dto.setUserId(1L);
+ 
+         when(service.getReviewsByUserId(1L))
+-                .thenReturn(List.of(response));
++                .thenReturn(List.of(dto));
+ 
+         mockMvc.perform(get("/api/reviews/user")
+                         .header("X-User-Id", "1"))
+                 .andExpect(status().isOk())
+-                .andExpect(jsonPath("$[0].userId").value(1L));
++                .andExpect(jsonPath("$[0].userId").value(1));
+     }
+ 
+     /**
+-     * Tests fetching all reviews.
++     * Tests missing header scenario.
+      */
+     @Test
+-    void getAll_success() throws Exception {
++    void addReview_missingHeader_returns400() throws Exception {
++        mockMvc.perform(post("/api/reviews")
++                        .contentType(MediaType.APPLICATION_JSON)
++                        .content(objectMapper.writeValueAsString(validRequest)))
++                .andExpect(status().isBadRequest());
++
++        verify(service, never()).addReview(any());
++    }
+ 
+-        ReviewResponseWithBookDetails response = new ReviewResponseWithBookDetails();
+-        response.setUserId(1L);
++    /**
++     * Tests validation failure (invalid rating).
++     */
++    @Test
++    void addReview_invalidRating_returns400() throws Exception {
++        validRequest.setRating(0);
+ 
+-        when(service.getAllReviews()).thenReturn(List.of(response));
++        mockMvc.perform(post("/api/reviews")
++                        .header("X-User-Id", "1")
++                        .contentType(MediaType.APPLICATION_JSON)
++                        .content(objectMapper.writeValueAsString(validRequest)))
++                .andExpect(status().isBadRequest());
+ 
+-        mockMvc.perform(get("/api/reviews"))
+-                .andExpect(status().isOk())
+-                .andExpect(jsonPath("$[0].userId").value(1L));
++        verify(service, never()).addReview(any());
+     }
+-}
++
++    /**
++     * Tests internal server error from service.
++     */
++    @Test
++    void addReview_serviceException_returns500() throws Exception {
++        when(service.addReview(any()))
++                .thenThrow(new RuntimeException("Unexpected error"));
++
++        mockMvc.perform(post("/api/reviews")
++                        .header("X-User-Id", "1")
++                        .contentType(MediaType.APPLICATION_JSON)
++                        .content(objectMapper.writeValueAsString(validRequest)))
++                .andExpect(status().isInternalServerError());
++    }
++
++    /**
++     * Tests when no reviews found for book.
++     */
++    @Test
++    void getByBook_notFound_returns404() throws Exception {
++        when(service.getReviewsByBookId(100L))
++                .thenThrow(new ReviewNotFoundException("Not found"));
++
++        mockMvc.perform(get("/api/reviews/book/100"))
++                .andExpect(status().isNotFound());
++    }
++}
+\ No newline at end of file

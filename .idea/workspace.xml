@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="becceb2d-0cfc-43d1-ab15-9528e8fea966" name="Changes" comment="User service added" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CoverageOptionsProvider">
+    <option name="myAddOrReplace" value="1" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Merge.Settings">
+    <option name="BRANCH" value="feature/kushal" />
+  </component>
+  <component name="Git.Rebase.Settings">
+    <option name="NEW_BASE" value="origin/feature/swastik" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;kushal-das11&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/kushal-das11/Digital-bookstore-management-system.git",
+    "accountId": "b58bd1f2-d7b2-4cda-a3bc-f9125325f17e"
+  },
+  "recentNewPullRequestHead": {
+    "server": {
+      "useHttp": false,
+      "host": "github.com",
+      "port": null,
+      "suffix": null
+    },
+    "owner": "kushal-das11",
+    "repository": "Digital-bookstore-management-system"
+  }
+}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="3EUxakNUDSn2oCUMuW2chRbjY82" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Application.CatalogService.executor": "Coverage",
+    "Application.CatalogServiceApplication.executor": "Coverage",
+    "Application.ConfigServerApplication.executor": "Run",
+    "Application.EurekaServerApplication.executor": "Run",
+    "Application.GatewayApplication.executor": "Run",
+    "Application.InventoryServiceApplication.executor": "Run",
+    "Application.ReviewServiceApplication.executor": "Run",
+    "Application.UserService.executor": "Run",
+    "Application.UserServiceApplication.executor": "Run",
+    "JUnit.AuthorControllerTest.executor": "Coverage",
+    "JUnit.AuthorServiceImplTest.executor": "Coverage",
+    "JUnit.BookControllerTest.executor": "Coverage",
+    "JUnit.BookServiceImplTest.deleteBook_failure.executor": "Run",
+    "JUnit.BookServiceImplTest.executor": "Coverage",
+    "JUnit.CategoryControllerTest.executor": "Coverage",
+    "JUnit.CategoryServiceImplTest.executor": "Coverage",
+    "JUnit.InventoryControllerTest.executor": "Coverage",
+    "JUnit.InventoryControllerTest.getAllInventory_success.executor": "Run",
+    "JUnit.InventoryControllerTest.getStockDetails_success.executor": "Run",
+    "JUnit.InventoryControllerTest.isStockLow_success.executor": "Run",
+    "JUnit.InventoryControllerTest.reduceStock_validationFailure_returns400.executor": "Coverage",
+    "JUnit.InventoryControllerTest.releaseStock_validationFailure_returns400.executor": "Run",
+    "JUnit.InventoryControllerTest.updateQuantity_notFound_returns404.executor": "Run",
+    "JUnit.InventoryControllerTest.updateQuantity_success.executor": "Run",
+    "JUnit.InventoryServiceTest.executor": "Coverage",
+    "JUnit.InventoryTest.executor": "Coverage",
+    "JUnit.ReviewControllerTest.addReview_invalidRating_returns400.executor": "Run",
+    "JUnit.ReviewControllerTest.addReview_missingHeader_returns400.executor": "Coverage",
+    "JUnit.ReviewControllerTest.editReview_notOwner_returns401.executor": "Run",
+    "JUnit.ReviewControllerTest.executor": "Coverage",
+    "JUnit.ReviewControllerTest.getByBook_notFound_returns404.executor": "Run",
+    "JUnit.ReviewControllerTest.getByBook_notFound_returns500.executor": "Coverage",
+    "JUnit.ReviewServiceImplTest.executor": "Coverage",
+    "JUnit.UserControllerTest.executor": "Coverage",
+    "JUnit.UserServiceImplTest.executor": "Coverage",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SONARLINT_PRECOMMIT_ANALYSIS": "true",
+    "git-widget-placeholder": "#4 on feature/bhagyashree",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/2499456/Desktop/Project/Digital-bookstore-management-system"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\2499456\Desktop\Project\Digital-bookstore-management-system\services" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="com.cts.catalogservice" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="configurationTypes">
+      <set>
+        <option value="Application" />
+      </set>
+    </option>
+    <option name="configurationStatuses">
+      <map>
+        <entry key="Application">
+          <value>
+            <map>
+              <entry key="CatalogService" value="STOPPED" />
+              <entry key="ConfigServerApplication" value="STOPPED" />
+              <entry key="EurekaServer" value="STOPPED" />
+              <entry key="GatewayApplication" value="STOPPED" />
+              <entry key="InventoryServiceApplication" value="STOPPED" />
+              <entry key="ReviewServiceApplication" value="STOPPED" />
+              <entry key="UserService" value="STOPPED" />
+            </map>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="RunManager" selected="JUnit.BookControllerTest">
+    <configuration name="ConfigServerApplication" type="Application" factoryName="Application">
+      <option name="ALTERNATIVE_JRE_PATH" value="ms-21" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="MAIN_CLASS_NAME" value="com.cts.cabapp.configserver.ConfigServerApplication" />
+      <module name="config-server" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="EurekaServer" type="Application" factoryName="Application">
+      <option name="ALTERNATIVE_JRE_PATH" value="ms-21" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="MAIN_CLASS_NAME" value="com.cts.eurekaserver.EurekaServerApplication" />
+      <module name="eureka-server" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="GatewayApplication" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="com.cts.gateway.GatewayApplication" />
+      <module name="gateway" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="InventoryServiceApplication" type="Application" factoryName="Application">
+      <option name="ALTERNATIVE_JRE_PATH" value="ms-21" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="MAIN_CLASS_NAME" value="com.cts.inventory.InventoryServiceApplication" />
+      <module name="inventory-service" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ReviewServiceApplication" type="Application" factoryName="Application">
+      <option name="ALTERNATIVE_JRE_PATH" value="ms-21" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="MAIN_CLASS_NAME" value="com.cts.review.ReviewServiceApplication" />
+      <module name="review-service" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AuthorControllerTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="catalog-service" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.cts.catalogservice.author.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.cts.catalogservice.author" />
+      <option name="MAIN_CLASS_NAME" value="com.cts.catalogservice.author.AuthorControllerTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="BookControllerTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="catalog-service" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.cts.catalogservice.book.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.cts.catalogservice.book" />
+      <option name="MAIN_CLASS_NAME" value="com.cts.catalogservice.book.BookControllerTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="BookServiceImplTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="catalog-service" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.cts.catalogservice.book.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.cts.catalogservice.book" />
+      <option name="MAIN_CLASS_NAME" value="com.cts.catalogservice.book.BookServiceImplTest" />
+      <option name="METHOD_NAME" value="" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="BookServiceImplTest.deleteBook_failure" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="catalog-service" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.cts.catalogservice.book.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.cts.catalogservice.book" />
+      <option name="MAIN_CLASS_NAME" value="com.cts.catalogservice.book.BookServiceImplTest" />
+      <option name="METHOD_NAME" value="deleteBook_failure" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="CategoryControllerTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="catalog-service" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.cts.catalogservice.category.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.cts.catalogservice.category" />
+      <option name="MAIN_CLASS_NAME" value="com.cts.catalogservice.category.CategoryControllerTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="InventoryTest" type="JUnit" factoryName="JUnit" nameIsGenerated="true">
+      <module name="inventory-service" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.cts.inventory.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.cts.inventory" />
+      <option name="MAIN_CLASS_NAME" value="com.cts.inventory.InventoryTest" />
+      <option name="METHOD_NAME" value="" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.ConfigServerApplication" />
+      <item itemvalue="Application.EurekaServer" />
+      <item itemvalue="Application.GatewayApplication" />
+      <item itemvalue="Application.InventoryServiceApplication" />
+      <item itemvalue="Application.ReviewServiceApplication" />
+      <item itemvalue="JUnit.InventoryTest" />
+      <item itemvalue="JUnit.AuthorControllerTest" />
+      <item itemvalue="JUnit.BookControllerTest" />
+      <item itemvalue="JUnit.BookServiceImplTest" />
+      <item itemvalue="JUnit.BookServiceImplTest.deleteBook_failure" />
+      <item itemvalue="JUnit.CategoryControllerTest" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.BookControllerTest" />
+        <item itemvalue="JUnit.CategoryControllerTest" />
+        <item itemvalue="JUnit.AuthorControllerTest" />
+        <item itemvalue="JUnit.BookServiceImplTest" />
+        <item itemvalue="JUnit.BookServiceImplTest.deleteBook_failure" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="becceb2d-0cfc-43d1-ab15-9528e8fea966" name="Changes" comment="" />
+      <created>1780247015008</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1780247015008</updated>
+    </task>
+    <task id="LOCAL-00001" summary="JavaDoc and Validation to DTO added">
+      <option name="closed" value="true" />
+      <created>1780251232681</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1780251232681</updated>
+    </task>
+    <task id="LOCAL-00002" summary="JavaDoc and Validation to DTO added">
+      <option name="closed" value="true" />
+      <created>1780251621459</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1780251621459</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Sonarqube code analysis handled">
+      <option name="closed" value="true" />
+      <created>1780251762508</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1780251762508</updated>
+    </task>
+    <task id="LOCAL-00004" summary="JavaDoc, Test classes for Service &amp; Controller added for Incventory &amp; review microservice">
+      <option name="closed" value="true" />
+      <created>1780307460643</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1780307460643</updated>
+    </task>
+    <task id="LOCAL-00005" summary="JavaDoc, Test classes for Service &amp; Controller added for Incventory &amp; review microservice">
+      <option name="closed" value="true" />
+      <created>1780308026890</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1780308026890</updated>
+    </task>
+    <task id="LOCAL-00006" summary="JavaDoc, Test classes for Service &amp; Controller added for Inventory &amp; review microservice">
+      <option name="closed" value="true" />
+      <created>1780377601625</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1780377601625</updated>
+    </task>
+    <task id="LOCAL-00007" summary="User service added">
+      <option name="closed" value="true" />
+      <created>1780381602197</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1780381602197</updated>
+    </task>
+    <task id="LOCAL-00008" summary="User service added">
+      <option name="closed" value="true" />
+      <created>1780381689206</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1780381689206</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="feature/kushal" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="JavaDoc and Validation to DTO added" />
+    <MESSAGE value="Sonarqube code analysis handled" />
+    <MESSAGE value="JavaDoc, Test classes for Service &amp; Controller added for Incventory &amp; review microservice" />
+    <MESSAGE value="JavaDoc, Test classes for Service &amp; Controller added for Inventory &amp; review microservice" />
+    <MESSAGE value="User service added" />
+    <option name="LAST_COMMIT_MESSAGE" value="User service added" />
+    <option name="GROUP_MULTIFILE_MERGE_BY_DIRECTORY" value="true" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$ReviewControllerTest_getByBook_notFound_returns500.ic" NAME="ReviewControllerTest.getByBook_notFound_returns500 Coverage Results" MODIFIED="1780372276411" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.review.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$AuthorServiceImplTest.ic" NAME="AuthorServiceImplTest Coverage Results" MODIFIED="1780385166841" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.catalogservice.author.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$InventoryControllerTest.ic" NAME="InventoryControllerTest Coverage Results" MODIFIED="1780378515317" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.inventory.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$BookServiceImplTest.ic" NAME="BookServiceImplTest Coverage Results" MODIFIED="1780386106888" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.catalogservice.book.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$CatalogServiceApplication.ic" NAME="CatalogServiceApplication Coverage Results" MODIFIED="1780380851936" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.catalogservice.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$UserServiceImplTest.ic" NAME="UserServiceImplTest Coverage Results" MODIFIED="1780380256881" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.userservice.tests.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$InventoryTest.ic" NAME="InventoryTest Coverage Results" MODIFIED="1780373850525" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.inventory.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$CategoryServiceImplTest.ic" NAME="CategoryServiceImplTest Coverage Results" MODIFIED="1780385281525" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.catalogservice.category.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$InventoryServiceTest.ic" NAME="InventoryServiceTest Coverage Results" MODIFIED="1780377510288" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.inventory.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$ReviewServiceImplTest.ic" NAME="ReviewServiceImplTest Coverage Results" MODIFIED="1780377468409" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.review.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$UserControllerTest.ic" NAME="UserControllerTest Coverage Results" MODIFIED="1780380275542" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.userservice.tests.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$CatalogService.ic" NAME="CatalogService Coverage Results" MODIFIED="1780381296092" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.catalogservice.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$ReviewControllerTest_addReview_missingHeader_returns400.ic" NAME="ReviewControllerTest.addReview_missingHeader_returns400 Coverage Results" MODIFIED="1780372457733" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.review.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$BookControllerTest.ic" NAME="BookControllerTest Coverage Results" MODIFIED="1780387409100" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.catalogservice.book.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$AuthorControllerTest.ic" NAME="AuthorControllerTest Coverage Results" MODIFIED="1780387132616" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.catalogservice.author.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$CategoryControllerTest.ic" NAME="CategoryControllerTest Coverage Results" MODIFIED="1780387226635" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.catalogservice.category.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$ReviewControllerTest.ic" NAME="ReviewControllerTest Coverage Results" MODIFIED="1780377422495" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.review.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/Digital_bookstore_management_system$InventoryControllerTest_reduceStock_validationFailure_returns400.ic" NAME="InventoryControllerTest.reduceStock_validationFailure_returns400 Coverage Results" MODIFIED="1780377263566" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.cts.inventory.*</FILTER>
+    </SUITE>
+  </component>
+</project>

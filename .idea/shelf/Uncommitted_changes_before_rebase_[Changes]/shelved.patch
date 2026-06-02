@@ -1,0 +1,498 @@
+Index: services/review-service/src/main/java/com/cts/review/exception/GlobalExceptionHandler.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cts.review.exception;\r\n\r\nimport com.cts.review.exception.customexception.InvalidReviewException;\r\nimport com.cts.review.exception.customexception.ReviewNotFoundException;\r\nimport com.cts.review.exception.customexception.ReviewOperationException;\r\nimport com.cts.review.exception.feignclientexception.CatalogServiceDownException;\r\nimport jakarta.servlet.http.HttpServletRequest;\r\nimport lombok.extern.slf4j.Slf4j;\r\nimport org.springframework.http.HttpStatus;\r\nimport org.springframework.http.ResponseEntity;\r\nimport org.springframework.web.bind.annotation.*;\r\nimport java.time.LocalDateTime;\r\nimport java.util.Map;\r\n\r\n\r\n/**\r\n * Global exception handler for the Review Service.\r\n*/\r\n@Slf4j\r\n@RestControllerAdvice\r\npublic class GlobalExceptionHandler {\r\n\r\n\r\n    /**\r\n     * Handles cases where a review is not found.\r\n     *\r\n     * @param ex the exception thrown\r\n     * @return standardized error response with HTTP 404\r\n     */\r\n    @ExceptionHandler(ReviewNotFoundException.class)\r\n    public ResponseEntity<ErrorResponse> handleNotFound(ReviewNotFoundException ex) {\r\n        return new ResponseEntity<>(\r\n                buildError(ex.getMessage(), HttpStatus.NOT_FOUND),\r\n                HttpStatus.NOT_FOUND\r\n        );\r\n    }\r\n\r\n\r\n    /**\r\n     * Handles invalid review input scenarios.\r\n     *\r\n     * @param ex the exception thrown\r\n     * @return standardized error response with HTTP 400\r\n     */\r\n    @ExceptionHandler(InvalidReviewException.class)\r\n    public ResponseEntity<ErrorResponse> handleInvalid(InvalidReviewException ex) {\r\n        return new ResponseEntity<>(\r\n                buildError(ex.getMessage(), HttpStatus.BAD_REQUEST),\r\n                HttpStatus.BAD_REQUEST\r\n        );\r\n    }\r\n\r\n\r\n    /**\r\n     * Handles business-level failures during review operations.\r\n     *\r\n     * @param ex the exception thrown\r\n     * @return standardized error response with HTTP 500\r\n     */\r\n    @ExceptionHandler(ReviewOperationException.class)\r\n    public ResponseEntity<ErrorResponse> handleOperation(ReviewOperationException ex) {\r\n        return new ResponseEntity<>(\r\n                buildError(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR),\r\n                HttpStatus.INTERNAL_SERVER_ERROR\r\n        );\r\n    }\r\n\r\n\r\n    /**\r\n     * Handles failures related to communication with the Catalog Service.\r\n     *\r\n     * @param ex  the exception thrown\r\n     * @param req HTTP request details\r\n     * @return standardized error response with HTTP 503\r\n     */\r\n    @ExceptionHandler(CatalogServiceDownException.class)\r\n    public ResponseEntity<ErrorResponse> handleCatalogDown(\r\n            CatalogServiceDownException ex,\r\n            HttpServletRequest req) {\r\n\r\n        log.error(\"Catalog service failure\", ex);\r\n\r\n        return new ResponseEntity<>(buildError(\r\n                ex.getMessage(),\r\n                HttpStatus.SERVICE_UNAVAILABLE), HttpStatus.SERVICE_UNAVAILABLE);\r\n    }\r\n\r\n\r\n    /**\r\n     * Handles all uncaught exceptions (fallback handler).\r\n     *\r\n     * @param ex the exception thrown\r\n     * @return standardized error response with HTTP 500\r\n     */\r\n    @ExceptionHandler(Exception.class)\r\n    public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {\r\n        return new ResponseEntity<>(\r\n                buildError(\"Unexpected error occurred\", HttpStatus.INTERNAL_SERVER_ERROR),\r\n                HttpStatus.INTERNAL_SERVER_ERROR\r\n        );\r\n    }\r\n\r\n\r\n    /**\r\n     * Builds a standardized {@link ErrorResponse}.\r\n     *\r\n     * @param message error message\r\n     * @param status  HTTP status\r\n     * @return populated ErrorResponse object\r\n     */\r\n    private ErrorResponse buildError(String message, HttpStatus status) {\r\n        return new ErrorResponse(\r\n                LocalDateTime.now(),\r\n                status.value(),\r\n                status.getReasonPhrase(),\r\n                message\r\n        );\r\n    }\r\n}\r\n
+===================================================================
+diff --git a/services/review-service/src/main/java/com/cts/review/exception/GlobalExceptionHandler.java b/services/review-service/src/main/java/com/cts/review/exception/GlobalExceptionHandler.java
+--- a/services/review-service/src/main/java/com/cts/review/exception/GlobalExceptionHandler.java	(revision b2f5ddcfdb7c89fad69ba4ec45ed54931ceb48a4)
++++ b/services/review-service/src/main/java/com/cts/review/exception/GlobalExceptionHandler.java	(date 1780374070408)
+@@ -8,6 +8,8 @@
+ import lombok.extern.slf4j.Slf4j;
+ import org.springframework.http.HttpStatus;
+ import org.springframework.http.ResponseEntity;
++import org.springframework.web.bind.MethodArgumentNotValidException;
++import org.springframework.web.bind.MissingRequestHeaderException;
+ import org.springframework.web.bind.annotation.*;
+ import java.time.LocalDateTime;
+ import java.util.Map;
+@@ -100,6 +102,30 @@
+         );
+     }
+ 
++    @ExceptionHandler(MissingRequestHeaderException.class)
++    public ResponseEntity<ErrorResponse> handleMissingHeader(MissingRequestHeaderException ex) {
++        return new ResponseEntity<>(
++                buildError(ex.getMessage(), HttpStatus.BAD_REQUEST),
++                HttpStatus.BAD_REQUEST
++        );
++    }
++
++    @ExceptionHandler(MethodArgumentNotValidException.class)
++    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
++
++        String message = ex.getBindingResult()
++                .getFieldErrors()
++                .stream()
++                .map(err -> err.getDefaultMessage())
++                .findFirst()
++                .orElse("Validation failed");
++
++        return new ResponseEntity<>(
++                buildError(message, HttpStatus.BAD_REQUEST),
++                HttpStatus.BAD_REQUEST
++        );
++    }
++
+ 
+     /**
+      * Builds a standardized {@link ErrorResponse}.
+Index: services/review-service/src/main/java/com/cts/review/service/impl/ReviewServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cts.review.service.impl;\r\n\r\nimport com.cts.review.client.CatalogClient;\r\nimport com.cts.review.dto.*;\r\nimport com.cts.review.exception.customexception.InvalidReviewException;\r\nimport com.cts.review.exception.customexception.ReviewNotFoundException;\r\nimport com.cts.review.exception.customexception.ReviewOperationException;\r\nimport com.cts.review.exception.feignclientexception.CatalogServiceDownException;\r\nimport com.cts.review.model.Review;\r\nimport com.cts.review.repository.ReviewRepository;\r\nimport com.cts.review.service.ReviewService;\r\nimport io.github.resilience4j.retry.annotation.Retry;\r\nimport io.github.resilience4j.timelimiter.annotation.TimeLimiter;\r\nimport lombok.RequiredArgsConstructor;\r\nimport lombok.extern.slf4j.Slf4j;\r\nimport org.springframework.stereotype.Service;\r\n\r\nimport java.util.List;\r\nimport java.util.concurrent.CompletableFuture;\r\n\r\n\r\n/**\r\n * Service implementation for managing review operations.\r\n*/\r\n@Service\r\n@Slf4j\r\n@RequiredArgsConstructor\r\npublic class ReviewServiceImpl implements ReviewService {\r\n\r\n    private final ReviewRepository repository;\r\n    private final CatalogClient catalogClient;\r\n\r\n\r\n    /**\r\n     * Maps a {@link Review} entity to {@link ReviewResponseDTO}.\r\n     *\r\n     * @param review the review entity\r\n     * @return mapped ReviewResponseDTO\r\n     */\r\n    private ReviewResponseDTO mapToDTO(Review review) {\r\n        return new ReviewResponseDTO(\r\n                review.getReviewId(),\r\n                review.getUserId(),\r\n                review.getBookId(),\r\n                review.getRating(),\r\n                review.getComment()\r\n        );\r\n    }\r\n\r\n    /**\r\n     * Maps a {@link Review} entity to {@link ReviewResponseWithBookDetails}.\r\n     * Fetches book details using Catalog Service with resilience.\r\n     *\r\n     * @param review the review entity\r\n     * @return detailed review response with book information, or null if fetch fails\r\n     */\r\n    private ReviewResponseWithBookDetails mapToDetailedDto(Review review) {\r\n        try {\r\n            BookResponse bookResponse =\r\n                    getBookWithResilience(review.getBookId()).join();\r\n\r\n            return new ReviewResponseWithBookDetails(\r\n                    review.getReviewId(),\r\n                    review.getUserId(),\r\n                    bookResponse,\r\n                    review.getRating(),\r\n                    review.getComment()\r\n            );\r\n\r\n        } catch (Exception ex) {\r\n            log.warn(\"Skipping reviewId={} due to book fetch failure\",\r\n                    review.getReviewId());\r\n\r\n            return null; // mark for skipping\r\n        }\r\n    }\r\n\r\n    /**\r\n     * Converts {@link ReviewRequestDTO} to {@link Review} entity.\r\n     *\r\n     * @param dto the incoming review request\r\n     * @return mapped Review entity\r\n     */\r\n    private Review mapToEntity(ReviewRequestDTO dto) {\r\n        return Review.builder()\r\n                .userId(dto.getUserId())\r\n                .bookId(dto.getBookId())\r\n                .rating(dto.getRating())\r\n                .comment(dto.getComment())\r\n                .editedByAdmin(false)\r\n                .build();\r\n    }\r\n\r\n\r\n    /**\r\n     * Adds a new review.\r\n     *\r\n     * @param request the review request\r\n     * @return created review response\r\n     * @throws InvalidReviewException if rating is invalid\r\n     */\r\n    @Override\r\n    public ReviewResponseDTO addReview(ReviewRequestDTO request) {\r\n\r\n        if (request.getRating() == null || request.getRating() < 1 || request.getRating() > 5) {\r\n            throw new InvalidReviewException(\"Rating must be between 1 and 5\");\r\n        }\r\n\r\n        Review review = mapToEntity(request);\r\n        return mapToDTO(repository.save(review));\r\n    }\r\n\r\n\r\n    /**\r\n     * Edits an existing review.\r\n     *\r\n     * @param reviewId the review ID\r\n     * @param userId   the user ID attempting to edit\r\n     * @param request  updated review data\r\n     * @return updated review response\r\n     * @throws ReviewNotFoundException if review does not exist\r\n     * @throws InvalidReviewException  if user is unauthorized or input is invalid\r\n     */\r\n    @Override\r\n    public ReviewResponseDTO editReview(Long reviewId, Long userId, ReviewRequestDTO request) {\r\n\r\n        Review review = repository.findById(reviewId)\r\n                .orElseThrow(() -> new ReviewNotFoundException(\"Review not found\"));\r\n\r\n        if (!review.getUserId().equals(userId)) {\r\n            throw new InvalidReviewException(\"You can only edit your own review\");\r\n        }\r\n\r\n        if (review.isEditedByAdmin()) {\r\n            throw new InvalidReviewException(\"Review cannot be edited after admin moderation\");\r\n        }\r\n\r\n        if (request.getRating() == null || request.getRating() < 1 || request.getRating() > 5) {\r\n            throw new InvalidReviewException(\"Rating must be between 1 and 5\");\r\n        }\r\n\r\n        review.setRating(request.getRating());\r\n        review.setComment(request.getComment());\r\n\r\n        return mapToDTO(repository.save(review));\r\n    }\r\n\r\n\r\n    /**\r\n     * Moderates a review (admin operation).\r\n     *\r\n     * @param reviewId the review ID\r\n     * @param comment  the updated comment by admin\r\n     * @return moderated review response\r\n     * @throws InvalidReviewException  if comment is empty\r\n     * @throws ReviewNotFoundException if review not found\r\n     */\r\n    @Override\r\n    public ReviewResponseDTO moderateReview(Long reviewId, String comment) {\r\n\r\n        if (comment == null || comment.trim().isEmpty()) {\r\n            throw new InvalidReviewException(\"Comment cannot be empty\");\r\n        }\r\n\r\n        Review review = repository.findById(reviewId)\r\n                .orElseThrow(() -> new ReviewNotFoundException(\"Review not found\"));\r\n\r\n        review.setComment(comment + \" [ADMIN_MODIFIED]\");\r\n        review.setEditedByAdmin(true);\r\n\r\n        return mapToDTO(repository.save(review));\r\n    }\r\n\r\n\r\n    /**\r\n     * Retrieves reviews by book ID.\r\n     *\r\n     * @param bookId the book ID\r\n     * @return list of review responses\r\n     * @throws ReviewNotFoundException if no reviews found\r\n     */\r\n    @Override\r\n    public List<ReviewResponseDTO> getReviewsByBookId(Long bookId) {\r\n\r\n        List<Review> reviews = repository.findByBookId(bookId);\r\n\r\n        if (reviews.isEmpty()) {\r\n            throw new ReviewNotFoundException(\"No reviews found for bookId: \" + bookId);\r\n        }\r\n\r\n        return reviews.stream().map(this::mapToDTO).toList();\r\n    }\r\n\r\n\r\n    /**\r\n     * Retrieves reviews by user ID along with book details.\r\n     *\r\n     * @param userId the user ID\r\n     * @return list of detailed review responses\r\n     * @throws ReviewNotFoundException if no reviews found\r\n     */\r\n    @Override\r\n    public List<ReviewResponseWithBookDetails> getReviewsByUserId(Long userId) {\r\n\r\n        List<Review> reviews = repository.findByUserId(userId);\r\n\r\n        if (reviews.isEmpty()) {\r\n            throw new ReviewNotFoundException(\"No reviews found for userId: \" + userId);\r\n        }\r\n\r\n        return reviews.stream().map(this::mapToDetailedDto).toList();\r\n    }\r\n\r\n\r\n    /**\r\n     * Retrieves all reviews along with book details.\r\n     *\r\n     * @return list of all reviews\r\n     * @throws ReviewOperationException if no reviews exist\r\n     */\r\n    @Override\r\n    public List<ReviewResponseWithBookDetails> getAllReviews() {\r\n\r\n        List<Review> reviews = repository.findAll();\r\n\r\n        if (reviews.isEmpty()) {\r\n            throw new ReviewOperationException(\"No reviews available\");\r\n        }\r\n\r\n        return reviews.stream().map(this::mapToDetailedDto).toList();\r\n    }\r\n\r\n\r\n    /**\r\n     * Fetches book details from Catalog Service with resilience.\r\n     * <p>\r\n     * Uses Retry and TimeLimiter for fault tolerance.\r\n     * </p>\r\n     *\r\n     * @param bookId the book ID\r\n     * @return CompletableFuture containing book response\r\n     */\r\n    @Retry(name = \"catalogService\", fallbackMethod = \"catalogFallback\")\r\n    @TimeLimiter(name = \"catalogService\")\r\n    public CompletableFuture<BookResponse> getBookWithResilience(Long bookId) {\r\n        return CompletableFuture.supplyAsync(() ->\r\n                catalogClient.getBookById(bookId)\r\n        );\r\n    }\r\n\r\n\r\n    /**\r\n     * Fallback method when Catalog Service fails.\r\n     *\r\n     * @param bookId the book ID\r\n     * @param ex     the exception that caused failure\r\n     * @return throws CatalogServiceDownException\r\n     */\r\n    public CompletableFuture<BookResponse> catalogFallback(Long bookId, Throwable ex) {\r\n        throw new CatalogServiceDownException(\"Catalog service down. Cant fetch book with id : \" + bookId + \" exception: \" + ex.getMessage());\r\n    }\r\n\r\n}\r\n
+===================================================================
+diff --git a/services/review-service/src/main/java/com/cts/review/service/impl/ReviewServiceImpl.java b/services/review-service/src/main/java/com/cts/review/service/impl/ReviewServiceImpl.java
+--- a/services/review-service/src/main/java/com/cts/review/service/impl/ReviewServiceImpl.java	(revision b2f5ddcfdb7c89fad69ba4ec45ed54931ceb48a4)
++++ b/services/review-service/src/main/java/com/cts/review/service/impl/ReviewServiceImpl.java	(date 1780374070412)
+@@ -102,12 +102,28 @@
+     @Override
+     public ReviewResponseDTO addReview(ReviewRequestDTO request) {
+ 
++        if (request == null) {
++            throw new InvalidReviewException("Review request cannot be null");
++        }
++
++        if (request.getUserId() == null) {
++            throw new InvalidReviewException("User ID is required");
++        }
++
++        if (request.getBookId() == null) {
++            throw new InvalidReviewException("Book ID is required");
++        }
++
++        // Optional: keep for defensive programming (DTO already validates this)
+         if (request.getRating() == null || request.getRating() < 1 || request.getRating() > 5) {
+             throw new InvalidReviewException("Rating must be between 1 and 5");
+         }
+ 
+         Review review = mapToEntity(request);
+-        return mapToDTO(repository.save(review));
++
++        Review savedReview = repository.save(review);
++
++        return mapToDTO(savedReview);
+     }
+ 
+ 
+Index: services/review-service/src/main/java/com/cts/review/controller/ReviewController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cts.review.controller;\r\n\r\nimport com.cts.review.dto.*;\r\nimport com.cts.review.service.ReviewService;\r\nimport io.swagger.v3.oas.annotations.Parameter;\r\nimport lombok.RequiredArgsConstructor;\r\nimport org.springframework.http.ResponseEntity;\r\nimport org.springframework.security.core.annotation.AuthenticationPrincipal;\r\nimport org.springframework.web.bind.annotation.*;\r\n\r\nimport java.util.List;\r\n\r\n\r\n/**\r\n * REST Controller for managing reviews.\r\n * Provides endpoints to create, update, moderate and fetch reviews.\r\n */\r\n@RestController\r\n@RequestMapping(\"/api/reviews\")\r\n@RequiredArgsConstructor\r\npublic class ReviewController {\r\n\r\n    private final ReviewService service;\r\n\r\n\r\n    /**\r\n     * Adds a new review for a book.\r\n     *\r\n     * @param userId  User ID passed via header\r\n     * @param request Review request payload\r\n     * @return created review response\r\n     */\r\n    @PostMapping\r\n    public ResponseEntity<ReviewResponseDTO> addReview(\r\n            @Parameter(hidden = true)\r\n            @RequestHeader(\"X-User-Id\") String userId,\r\n            @RequestBody ReviewRequestDTO request) {\r\n        request.setUserId(Long.valueOf(userId));\r\n        return ResponseEntity.ok(service.addReview(request));\r\n    }\r\n\r\n\r\n    /**\r\n     * Edits an existing review.\r\n     *\r\n     * @param userId   User ID from header\r\n     * @param reviewId ID of review to edit\r\n     * @param request  Updated review details\r\n     * @return updated review response\r\n     */\r\n    @PutMapping(\"/{reviewId}/edit\")\r\n    public ResponseEntity<ReviewResponseDTO> editReview(\r\n            @Parameter(hidden = true)\r\n            @RequestHeader(\"X-User-Id\") String userId,\r\n            @PathVariable Long reviewId,\r\n            @RequestBody ReviewRequestDTO request) {\r\n        return ResponseEntity.ok(service.editReview(reviewId, Long.valueOf(userId), request));\r\n    }\r\n\r\n\r\n    /**\r\n     * Moderates a review (admin operation).\r\n     *\r\n     * @param reviewId ID of the review\r\n     * @param comment  moderation comment\r\n     * @return moderated review response\r\n     */\r\n    @PutMapping(\"/{reviewId}/moderate\")\r\n    public ResponseEntity<ReviewResponseDTO> moderateReview(\r\n            @PathVariable Long reviewId,\r\n            @RequestParam String comment) {\r\n        return ResponseEntity.ok(service.moderateReview(reviewId, comment));\r\n    }\r\n\r\n\r\n    /**\r\n     * Fetches all reviews for a specific book.\r\n     *\r\n     * @param bookId Book ID\r\n     * @return list of reviews\r\n     */\r\n    @GetMapping(\"/book/{bookId}\")\r\n    public ResponseEntity<List<ReviewResponseDTO>> getByBook(@PathVariable Long bookId) {\r\n        return ResponseEntity.ok(service.getReviewsByBookId(bookId));\r\n    }\r\n\r\n\r\n    /**\r\n     * Fetches all reviews by a specific user.\r\n     *\r\n     * @param userId User ID from header\r\n     * @return list of reviews with book details\r\n     */\r\n    @GetMapping(\"/user\")\r\n    public ResponseEntity<List<ReviewResponseWithBookDetails>> getByUser(\r\n            @Parameter(hidden = true)\r\n            @RequestHeader(\"X-User-Id\") String userId) {\r\n        return ResponseEntity.ok(service.getReviewsByUserId(Long.valueOf(userId)));\r\n    }\r\n\r\n    /**\r\n     * Fetches all reviews in the system.\r\n     *\r\n     * @return list of all reviews with book details\r\n     */\r\n    @GetMapping\r\n    public ResponseEntity<List<ReviewResponseWithBookDetails>> getAll() {\r\n        return ResponseEntity.ok(service.getAllReviews());\r\n    }\r\n}
+===================================================================
+diff --git a/services/review-service/src/main/java/com/cts/review/controller/ReviewController.java b/services/review-service/src/main/java/com/cts/review/controller/ReviewController.java
+--- a/services/review-service/src/main/java/com/cts/review/controller/ReviewController.java	(revision b2f5ddcfdb7c89fad69ba4ec45ed54931ceb48a4)
++++ b/services/review-service/src/main/java/com/cts/review/controller/ReviewController.java	(date 1780374070401)
+@@ -3,6 +3,7 @@
+ import com.cts.review.dto.*;
+ import com.cts.review.service.ReviewService;
+ import io.swagger.v3.oas.annotations.Parameter;
++import jakarta.validation.Valid;
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.http.ResponseEntity;
+ import org.springframework.security.core.annotation.AuthenticationPrincipal;
+@@ -34,7 +35,7 @@
+     public ResponseEntity<ReviewResponseDTO> addReview(
+             @Parameter(hidden = true)
+             @RequestHeader("X-User-Id") String userId,
+-            @RequestBody ReviewRequestDTO request) {
++            @RequestBody @Valid ReviewRequestDTO request) {
+         request.setUserId(Long.valueOf(userId));
+         return ResponseEntity.ok(service.addReview(request));
+     }
+@@ -53,7 +54,7 @@
+             @Parameter(hidden = true)
+             @RequestHeader("X-User-Id") String userId,
+             @PathVariable Long reviewId,
+-            @RequestBody ReviewRequestDTO request) {
++            @RequestBody @Valid ReviewRequestDTO request) {
+         return ResponseEntity.ok(service.editReview(reviewId, Long.valueOf(userId), request));
+     }
+ 
+Index: services/inventory-service/src/main/java/com/cts/inventory/controller/InventoryController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cts.inventory.controller;\r\n\r\nimport com.cts.inventory.dto.AvailabilityDto;\r\nimport com.cts.inventory.dto.InventoryRequestDTO;\r\nimport com.cts.inventory.dto.InventoryResponseDTO;\r\nimport com.cts.inventory.dto.ReserveRequest;\r\nimport com.cts.inventory.service.InventoryService;\r\nimport lombok.RequiredArgsConstructor;\r\nimport org.springframework.http.ResponseEntity;\r\nimport org.springframework.web.bind.annotation.*;\r\n\r\nimport java.util.List;\r\n\r\n\r\n/**\r\n * REST controller for handling inventory-related APIs.\r\n */\r\n@RestController\r\n@RequestMapping(\"/api/inventory\")\r\n@RequiredArgsConstructor\r\npublic class InventoryController {\r\n\r\n    private final InventoryService service;\r\n\r\n\r\n    /**\r\n     * Creates new inventory.\r\n     *\r\n     * @param request inventory request data\r\n     * @return created inventory details\r\n     */\r\n    @PostMapping\r\n    public ResponseEntity<InventoryResponseDTO> addInventory(@RequestBody InventoryRequestDTO request) {\r\n        return ResponseEntity.ok(service.addInventory(request));\r\n    }\r\n\r\n\r\n    /**\r\n     * Reduces stock based on request.\r\n     *\r\n     * @param reserveRequest request containing book ID and quantity\r\n     * @return success message\r\n     */\r\n    @PutMapping(\"/reduce\")\r\n    public ResponseEntity<String> reduceStock(@RequestBody ReserveRequest reserveRequest) {\r\n        service.reduceStock(reserveRequest.getBookId(), reserveRequest.getQuantity());\r\n        return ResponseEntity.ok(\"Stock reduced successfully\");\r\n    }\r\n\r\n\r\n    /**\r\n     * Releases stock back to inventory.\r\n     *\r\n     * @param request request containing book ID and quantity\r\n     * @return success message\r\n     */\r\n    @PutMapping(\"/release\")\r\n    public ResponseEntity<String> releaseStock(@RequestBody ReserveRequest request) {\r\n        service.releaseStock(request.getBookId(), request.getQuantity());\r\n        return ResponseEntity.ok(\"Stock released\");\r\n    }\r\n\r\n    /**\r\n     * Retrieves all out-of-stock books.\r\n     *\r\n     * @return list of out-of-stock inventories\r\n     */\r\n    @GetMapping(\"/all-out-of-stock-books\")\r\n    public ResponseEntity<List<InventoryResponseDTO>> allOutOfStockBooks() {\r\n        return ResponseEntity.ok(service.allOutOfStockBooks());\r\n    }\r\n\r\n\r\n    /**\r\n     * Retrieves inventory by book ID.\r\n     *\r\n     * @param bookId book identifier\r\n     * @return inventory details\r\n     */\r\n    @GetMapping(\"/{bookId:\\\\d+}\")\r\n    public ResponseEntity<InventoryResponseDTO> getInventory(@PathVariable Long bookId) {\r\n        return ResponseEntity.ok(service.getInventoryByBookId(bookId));\r\n    }\r\n\r\n\r\n    /**\r\n     * Retrieves all inventory records.\r\n     *\r\n     * @return list of inventories\r\n     */\r\n    @GetMapping\r\n    public ResponseEntity<List<InventoryResponseDTO>> getAllInventory() {\r\n        return ResponseEntity.ok(service.getAllInventory());\r\n    }\r\n\r\n\r\n    /**\r\n     * Updates inventory quantity.\r\n     *\r\n     * @param bookId book identifier\r\n     * @param quantity new quantity value\r\n     * @return updated inventory details\r\n     */\r\n    @PutMapping(\"/{bookId:\\\\d+}\")\r\n    public ResponseEntity<InventoryResponseDTO> updateQuantity(\r\n            @PathVariable Long bookId,\r\n            @RequestParam int quantity) {\r\n        return ResponseEntity.ok(service.updateQuantity(bookId, quantity));\r\n    }\r\n\r\n    /**\r\n     * Deletes inventory by book ID.\r\n     *\r\n     * @param bookId book identifier\r\n     * @return success message\r\n     */\r\n    @DeleteMapping(\"/{bookId:\\\\d+}\")\r\n    public ResponseEntity<String> deleteInventory(@PathVariable long bookId) {\r\n        service.deleteInventory(bookId);\r\n        return ResponseEntity.ok(\"Inventory deleted successfully\");\r\n    }\r\n\r\n    /**\r\n     * Checks if stock is low.\r\n     *\r\n     * @param bookId book identifier\r\n     * @return true if stock is low\r\n     */\r\n    @GetMapping(\"/{bookId:\\\\d+}/low-stock\")\r\n    public ResponseEntity<Boolean> isStockLow(@PathVariable long bookId) {\r\n        return ResponseEntity.ok(service.isStockLow(bookId));\r\n    }\r\n\r\n\r\n    /**\r\n     * Retrieves stock availability details.\r\n     *\r\n     * @param bookId book identifier\r\n     * @return availability information\r\n     */\r\n    @GetMapping(\"/{bookId:\\\\d+}/availability\")\r\n    public ResponseEntity<AvailabilityDto> getStockDetails(@PathVariable long bookId) {\r\n        return ResponseEntity.ok(service.getStockDetails(bookId));\r\n    }\r\n}
+===================================================================
+diff --git a/services/inventory-service/src/main/java/com/cts/inventory/controller/InventoryController.java b/services/inventory-service/src/main/java/com/cts/inventory/controller/InventoryController.java
+--- a/services/inventory-service/src/main/java/com/cts/inventory/controller/InventoryController.java	(revision b2f5ddcfdb7c89fad69ba4ec45ed54931ceb48a4)
++++ b/services/inventory-service/src/main/java/com/cts/inventory/controller/InventoryController.java	(date 1780374070395)
+@@ -5,6 +5,7 @@
+ import com.cts.inventory.dto.InventoryResponseDTO;
+ import com.cts.inventory.dto.ReserveRequest;
+ import com.cts.inventory.service.InventoryService;
++import jakarta.validation.Valid;
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.http.ResponseEntity;
+ import org.springframework.web.bind.annotation.*;
+@@ -30,7 +31,7 @@
+      * @return created inventory details
+      */
+     @PostMapping
+-    public ResponseEntity<InventoryResponseDTO> addInventory(@RequestBody InventoryRequestDTO request) {
++    public ResponseEntity<InventoryResponseDTO> addInventory(@RequestBody @Valid InventoryRequestDTO request) {
+         return ResponseEntity.ok(service.addInventory(request));
+     }
+ 
+@@ -42,7 +43,7 @@
+      * @return success message
+      */
+     @PutMapping("/reduce")
+-    public ResponseEntity<String> reduceStock(@RequestBody ReserveRequest reserveRequest) {
++    public ResponseEntity<String> reduceStock(@RequestBody @Valid ReserveRequest reserveRequest) {
+         service.reduceStock(reserveRequest.getBookId(), reserveRequest.getQuantity());
+         return ResponseEntity.ok("Stock reduced successfully");
+     }
+@@ -55,7 +56,7 @@
+      * @return success message
+      */
+     @PutMapping("/release")
+-    public ResponseEntity<String> releaseStock(@RequestBody ReserveRequest request) {
++    public ResponseEntity<String> releaseStock(@RequestBody @Valid ReserveRequest request) {
+         service.releaseStock(request.getBookId(), request.getQuantity());
+         return ResponseEntity.ok("Stock released");
+     }
+Index: services/review-service/src/main/java/com/cts/review/dto/ReviewRequestDTO.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cts.review.dto;\r\n\r\nimport jakarta.validation.constraints.*;\r\nimport lombok.*;\r\n\r\n\r\n/**\r\n * DTO representing the request payload for creating or updating a review.\r\n */\r\n@Data\r\n@NoArgsConstructor\r\n@AllArgsConstructor\r\npublic class ReviewRequestDTO {\r\n\r\n    /**\r\n     * Unique identifier of the user submitting the review.\r\n     */\r\n    @NotNull(message = \"User ID cannot be null\")\r\n    private Long userId;\r\n\r\n\r\n    /**\r\n     * Unique identifier of the book being reviewed.\r\n     */\r\n    @NotNull(message = \"Book ID cannot be null\")\r\n    private Long bookId;\r\n\r\n\r\n    /**\r\n     * Rating given to the book.\r\n     * Must be between 1 and 5.\r\n     */\r\n    @NotNull(message = \"Rating cannot be null\")\r\n    @Min(value = 1, message = \"Rating must be at least 1\")\r\n    @Max(value = 5, message = \"Rating cannot exceed 5\")\r\n    private Integer rating;\r\n\r\n\r\n    /**\r\n     * Review comment provided by the user.\r\n     */\r\n    @NotBlank(message = \"Comment cannot be empty\")\r\n    @Size(max = 500, message = \"Comment cannot exceed 500 characters\")\r\n    private String comment;\r\n}\r\n
+===================================================================
+diff --git a/services/review-service/src/main/java/com/cts/review/dto/ReviewRequestDTO.java b/services/review-service/src/main/java/com/cts/review/dto/ReviewRequestDTO.java
+--- a/services/review-service/src/main/java/com/cts/review/dto/ReviewRequestDTO.java	(revision b2f5ddcfdb7c89fad69ba4ec45ed54931ceb48a4)
++++ b/services/review-service/src/main/java/com/cts/review/dto/ReviewRequestDTO.java	(date 1780374070404)
+@@ -12,10 +12,7 @@
+ @AllArgsConstructor
+ public class ReviewRequestDTO {
+ 
+-    /**
+-     * Unique identifier of the user submitting the review.
+-     */
+-    @NotNull(message = "User ID cannot be null")
++
+     private Long userId;
+ 
+ 
+Index: services/inventory-service/src/test/java/com/cts/inventory/InventoryControllerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cts.inventory;\r\n\r\nimport com.cts.inventory.controller.InventoryController;\r\nimport com.cts.inventory.dto.*;\r\nimport com.cts.inventory.service.InventoryService;\r\nimport com.fasterxml.jackson.databind.ObjectMapper;\r\nimport org.junit.jupiter.api.Test;\r\nimport org.junit.jupiter.api.extension.ExtendWith;\r\nimport org.springframework.beans.factory.annotation.Autowired;\r\nimport org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;\r\nimport org.springframework.http.MediaType;\r\nimport org.springframework.test.context.bean.override.mockito.MockitoBean;\r\nimport org.springframework.test.web.servlet.MockMvc;\r\nimport org.mockito.junit.jupiter.MockitoExtension;\r\n\r\nimport java.util.List;\r\n\r\nimport static org.mockito.Mockito.when;\r\nimport static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;\r\nimport static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;\r\n\r\n/**\r\n * Unit test class for {@link InventoryController}.\r\n * <p>\r\n * This class tests all REST endpoints exposed by the InventoryController.\r\n * It uses {@link WebMvcTest} to load only the web layer and mocks the\r\n * {@link InventoryService}.\r\n * </p>\r\n *\r\n * <p><b>Testing Approach:</b></p>\r\n * <ul>\r\n *     <li>Uses MockMvc for HTTP request simulation</li>\r\n *     <li>Mocks service layer to isolate controller logic</li>\r\n *     <li>Validates response status and payload</li>\r\n * </ul>\r\n */\r\n@WebMvcTest(InventoryController.class)\r\n@ExtendWith(MockitoExtension.class)\r\nclass InventoryControllerTest {\r\n\r\n    @Autowired\r\n    private MockMvc mockMvc;\r\n\r\n    @MockitoBean\r\n    private InventoryService service;\r\n\r\n    @Autowired\r\n    private ObjectMapper objectMapper;\r\n\r\n    /**\r\n     * Tests successful inventory creation.\r\n     */\r\n    @Test\r\n    void addInventory_success() throws Exception {\r\n\r\n        InventoryRequestDTO request = new InventoryRequestDTO();\r\n        request.setBookId(100L);\r\n        request.setQuantity(50);\r\n\r\n        InventoryResponseDTO response = new InventoryResponseDTO();\r\n        response.setBookId(100L);\r\n        response.setQuantity(50);\r\n\r\n        when(service.addInventory(org.mockito.ArgumentMatchers.any()))\r\n                .thenReturn(response);\r\n\r\n        mockMvc.perform(post(\"/api/inventory\")\r\n                        .contentType(MediaType.APPLICATION_JSON)\r\n                        .content(objectMapper.writeValueAsString(request)))\r\n                .andExpect(status().isOk())\r\n                .andExpect(jsonPath(\"$.bookId\").value(100L));\r\n    }\r\n\r\n    /**\r\n     * Tests reducing stock successfully.\r\n     */\r\n    @Test\r\n    void reduceStock_success() throws Exception {\r\n\r\n        ReserveRequest request = new ReserveRequest(100L, 5);\r\n\r\n        mockMvc.perform(put(\"/api/inventory/reduce\")\r\n                        .contentType(MediaType.APPLICATION_JSON)\r\n                        .content(objectMapper.writeValueAsString(request)))\r\n                .andExpect(status().isOk())\r\n                .andExpect(content().string(\"Stock reduced successfully\"));\r\n    }\r\n\r\n    /**\r\n     * Tests releasing stock successfully.\r\n     */\r\n    @Test\r\n    void releaseStock_success() throws Exception {\r\n\r\n        ReserveRequest request = new ReserveRequest(100L, 5);\r\n\r\n        mockMvc.perform(put(\"/api/inventory/release\")\r\n                        .contentType(MediaType.APPLICATION_JSON)\r\n                        .content(objectMapper.writeValueAsString(request)))\r\n                .andExpect(status().isOk())\r\n                .andExpect(content().string(\"Stock released\"));\r\n    }\r\n\r\n    /**\r\n     * Tests fetching all out-of-stock books.\r\n     */\r\n    @Test\r\n    void allOutOfStockBooks_success() throws Exception {\r\n\r\n        when(service.allOutOfStockBooks())\r\n                .thenReturn(List.of(new InventoryResponseDTO()));\r\n\r\n        mockMvc.perform(get(\"/api/inventory/all-out-of-stock-books\"))\r\n                .andExpect(status().isOk());\r\n    }\r\n\r\n    /**\r\n     * Tests fetching inventory by book ID.\r\n     */\r\n    @Test\r\n    void getInventory_success() throws Exception {\r\n\r\n        InventoryResponseDTO response = new InventoryResponseDTO();\r\n        response.setBookId(100L);\r\n\r\n        when(service.getInventoryByBookId(100L)).thenReturn(response);\r\n\r\n        mockMvc.perform(get(\"/api/inventory/100\"))\r\n                .andExpect(status().isOk())\r\n                .andExpect(jsonPath(\"$.bookId\").value(100L));\r\n    }\r\n\r\n    /**\r\n     * Tests fetching all inventory records.\r\n     */\r\n    @Test\r\n    void getAllInventory_success() throws Exception {\r\n\r\n        when(service.getAllInventory())\r\n                .thenReturn(List.of(new InventoryResponseDTO()));\r\n\r\n        mockMvc.perform(get(\"/api/inventory\"))\r\n                .andExpect(status().isOk());\r\n    }\r\n\r\n    /**\r\n     * Tests updating inventory quantity.\r\n     */\r\n    @Test\r\n    void updateQuantity_success() throws Exception {\r\n\r\n        InventoryResponseDTO response = new InventoryResponseDTO();\r\n        response.setQuantity(100);\r\n\r\n        when(service.updateQuantity(100L, 100)).thenReturn(response);\r\n\r\n        mockMvc.perform(put(\"/api/inventory/100\")\r\n                        .param(\"quantity\", \"100\"))\r\n                .andExpect(status().isOk())\r\n                .andExpect(jsonPath(\"$.quantity\").value(100));\r\n    }\r\n\r\n    /**\r\n     * Tests deleting inventory.\r\n     */\r\n    @Test\r\n    void deleteInventory_success() throws Exception {\r\n\r\n        mockMvc.perform(delete(\"/api/inventory/100\"))\r\n                .andExpect(status().isOk())\r\n                .andExpect(content().string(\"Inventory deleted successfully\"));\r\n    }\r\n\r\n    /**\r\n     * Tests checking low stock condition.\r\n     */\r\n    @Test\r\n    void isStockLow_success() throws Exception {\r\n\r\n        when(service.isStockLow(100L)).thenReturn(true);\r\n\r\n        mockMvc.perform(get(\"/api/inventory/100/low-stock\"))\r\n                .andExpect(status().isOk())\r\n                .andExpect(content().string(\"true\"));\r\n    }\r\n\r\n    /**\r\n     * Tests retrieving stock availability details.\r\n     */\r\n    @Test\r\n    void getStockDetails_success() throws Exception {\r\n\r\n        AvailabilityDto dto = new AvailabilityDto();\r\n        dto.setInStock(true);\r\n\r\n        when(service.getStockDetails(100L)).thenReturn(dto);\r\n\r\n        mockMvc.perform(get(\"/api/inventory/100/availability\"))\r\n                .andExpect(status().isOk())\r\n                .andExpect(jsonPath(\"$.inStock\").value(true));\r\n    }\r\n}
+===================================================================
+diff --git a/services/inventory-service/src/test/java/com/cts/inventory/InventoryControllerTest.java b/services/inventory-service/src/test/java/com/cts/inventory/InventoryControllerTest.java
+--- a/services/inventory-service/src/test/java/com/cts/inventory/InventoryControllerTest.java	(revision b2f5ddcfdb7c89fad69ba4ec45ed54931ceb48a4)
++++ b/services/inventory-service/src/test/java/com/cts/inventory/InventoryControllerTest.java	(date 1780374070397)
+@@ -2,181 +2,141 @@
+ 
+ import com.cts.inventory.controller.InventoryController;
+ import com.cts.inventory.dto.*;
++import com.cts.inventory.exception.GlobalExceptionHandler;
++import com.cts.inventory.exception.customexception.InventoryNotFoundException;
++import com.cts.inventory.exception.customexception.InvalidInventoryException;
++import com.cts.inventory.exception.customexception.OutOfStockException;
+ import com.cts.inventory.service.InventoryService;
+ import com.fasterxml.jackson.databind.ObjectMapper;
++import org.junit.jupiter.api.BeforeEach;
+ import org.junit.jupiter.api.Test;
+ import org.junit.jupiter.api.extension.ExtendWith;
+-import org.springframework.beans.factory.annotation.Autowired;
+-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
++import org.mockito.InjectMocks;
++import org.mockito.Mock;
++import org.mockito.junit.jupiter.MockitoExtension;
+ import org.springframework.http.MediaType;
+-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+ import org.springframework.test.web.servlet.MockMvc;
+-import org.mockito.junit.jupiter.MockitoExtension;
++import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+ 
+ import java.util.List;
+ 
+-import static org.mockito.Mockito.when;
++import static org.mockito.ArgumentMatchers.*;
++import static org.mockito.Mockito.*;
+ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+ 
+ /**
+- * Unit test class for {@link InventoryController}.
+- * <p>
+- * This class tests all REST endpoints exposed by the InventoryController.
+- * It uses {@link WebMvcTest} to load only the web layer and mocks the
+- * {@link InventoryService}.
+- * </p>
+- *
+- * <p><b>Testing Approach:</b></p>
+- * <ul>
+- *     <li>Uses MockMvc for HTTP request simulation</li>
+- *     <li>Mocks service layer to isolate controller logic</li>
+- *     <li>Validates response status and payload</li>
+- * </ul>
++ * Unit tests for InventoryController.
+  */
+-@WebMvcTest(InventoryController.class)
+ @ExtendWith(MockitoExtension.class)
+ class InventoryControllerTest {
+ 
+-    @Autowired
+-    private MockMvc mockMvc;
+-
+-    @MockitoBean
++    @Mock
+     private InventoryService service;
+ 
+-    @Autowired
+-    private ObjectMapper objectMapper;
++    @InjectMocks
++    private InventoryController controller;
++
++    private MockMvc mockMvc;
++    private ObjectMapper mapper;
++
++    private InventoryResponseDTO response;
++    private InventoryRequestDTO request;
++
++    @BeforeEach
++    void setUp() {
++        mockMvc = MockMvcBuilders.standaloneSetup(controller)
++                .setControllerAdvice(new GlobalExceptionHandler())
++                .build();
++
++        mapper = new ObjectMapper();
++
++        request = new InventoryRequestDTO();
++        request.setBookId(100L);
++        request.setQuantity(10);
++
++        response = new InventoryResponseDTO(1L,100L,1);
++    }
+ 
+     /**
+-     * Tests successful inventory creation.
++     * SUCCESS CASES
+      */
++
+     @Test
+     void addInventory_success() throws Exception {
+-
+-        InventoryRequestDTO request = new InventoryRequestDTO();
+-        request.setBookId(100L);
+-        request.setQuantity(50);
+-
+-        InventoryResponseDTO response = new InventoryResponseDTO();
+-        response.setBookId(100L);
+-        response.setQuantity(50);
+-
+-        when(service.addInventory(org.mockito.ArgumentMatchers.any()))
+-                .thenReturn(response);
++        when(service.addInventory(any())).thenReturn(response);
+ 
+         mockMvc.perform(post("/api/inventory")
+                         .contentType(MediaType.APPLICATION_JSON)
+-                        .content(objectMapper.writeValueAsString(request)))
++                        .content(mapper.writeValueAsString(request)))
+                 .andExpect(status().isOk())
+-                .andExpect(jsonPath("$.bookId").value(100L));
++                .andExpect(jsonPath("$.bookId").value(100));
++
++        verify(service).addInventory(any());
+     }
+ 
+-    /**
+-     * Tests reducing stock successfully.
+-     */
+     @Test
+     void reduceStock_success() throws Exception {
+-
+-        ReserveRequest request = new ReserveRequest(100L, 5);
++        ReserveRequest reserve = new ReserveRequest(100L, 2);
+ 
+         mockMvc.perform(put("/api/inventory/reduce")
+                         .contentType(MediaType.APPLICATION_JSON)
+-                        .content(objectMapper.writeValueAsString(request)))
+-                .andExpect(status().isOk())
+-                .andExpect(content().string("Stock reduced successfully"));
++                        .content(mapper.writeValueAsString(reserve)))
++                .andExpect(status().isOk());
++
++        verify(service).reduceStock(100L, 2);
+     }
+ 
+-    /**
+-     * Tests releasing stock successfully.
+-     */
+     @Test
+     void releaseStock_success() throws Exception {
+-
+-        ReserveRequest request = new ReserveRequest(100L, 5);
++        ReserveRequest reserve = new ReserveRequest(100L, 2);
+ 
+         mockMvc.perform(put("/api/inventory/release")
+                         .contentType(MediaType.APPLICATION_JSON)
+-                        .content(objectMapper.writeValueAsString(request)))
+-                .andExpect(status().isOk())
+-                .andExpect(content().string("Stock released"));
+-    }
+-
+-    /**
+-     * Tests fetching all out-of-stock books.
+-     */
+-    @Test
+-    void allOutOfStockBooks_success() throws Exception {
+-
+-        when(service.allOutOfStockBooks())
+-                .thenReturn(List.of(new InventoryResponseDTO()));
+-
+-        mockMvc.perform(get("/api/inventory/all-out-of-stock-books"))
++                        .content(mapper.writeValueAsString(reserve)))
+                 .andExpect(status().isOk());
++
++        verify(service).releaseStock(100L, 2);
+     }
+ 
+-    /**
+-     * Tests fetching inventory by book ID.
+-     */
+     @Test
+     void getInventory_success() throws Exception {
+-
+-        InventoryResponseDTO response = new InventoryResponseDTO();
+-        response.setBookId(100L);
+-
+         when(service.getInventoryByBookId(100L)).thenReturn(response);
+ 
+         mockMvc.perform(get("/api/inventory/100"))
+                 .andExpect(status().isOk())
+-                .andExpect(jsonPath("$.bookId").value(100L));
++                .andExpect(jsonPath("$.bookId").value(100));
+     }
+ 
+-    /**
+-     * Tests fetching all inventory records.
+-     */
+     @Test
+     void getAllInventory_success() throws Exception {
+-
+-        when(service.getAllInventory())
+-                .thenReturn(List.of(new InventoryResponseDTO()));
++        when(service.getAllInventory()).thenReturn(List.of(response));
+ 
+         mockMvc.perform(get("/api/inventory"))
+-                .andExpect(status().isOk());
++                .andExpect(status().isOk())
++                .andExpect(jsonPath("$[0].bookId").value(100));
+     }
+ 
+-    /**
+-     * Tests updating inventory quantity.
+-     */
+     @Test
+     void updateQuantity_success() throws Exception {
+-
+-        InventoryResponseDTO response = new InventoryResponseDTO();
+-        response.setQuantity(100);
+-
+-        when(service.updateQuantity(100L, 100)).thenReturn(response);
++        when(service.updateQuantity(100L, 20)).thenReturn(new InventoryResponseDTO(1L,100L, 20));
+ 
+         mockMvc.perform(put("/api/inventory/100")
+-                        .param("quantity", "100"))
++                        .param("quantity", "20"))
+                 .andExpect(status().isOk())
+-                .andExpect(jsonPath("$.quantity").value(100));
++                .andExpect(jsonPath("$.quantity").value(20));
+     }
+ 
+-    /**
+-     * Tests deleting inventory.
+-     */
+     @Test
+     void deleteInventory_success() throws Exception {
+-
+         mockMvc.perform(delete("/api/inventory/100"))
+-                .andExpect(status().isOk())
+-                .andExpect(content().string("Inventory deleted successfully"));
++                .andExpect(status().isOk());
++
++        verify(service).deleteInventory(100L);
+     }
+ 
+-    /**
+-     * Tests checking low stock condition.
+-     */
+     @Test
+     void isStockLow_success() throws Exception {
+-
+         when(service.isStockLow(100L)).thenReturn(true);
+ 
+         mockMvc.perform(get("/api/inventory/100/low-stock"))
+@@ -184,19 +144,53 @@
+                 .andExpect(content().string("true"));
+     }
+ 
+-    /**
+-     * Tests retrieving stock availability details.
+-     */
+     @Test
+     void getStockDetails_success() throws Exception {
+-
+-        AvailabilityDto dto = new AvailabilityDto();
+-        dto.setInStock(true);
+-
++        AvailabilityDto dto = new AvailabilityDto(100L, 10, true);
+         when(service.getStockDetails(100L)).thenReturn(dto);
+ 
+         mockMvc.perform(get("/api/inventory/100/availability"))
+                 .andExpect(status().isOk())
+-                .andExpect(jsonPath("$.inStock").value(true));
++                .andExpect(jsonPath("$.bookId").value(100));
++    }
++
++    /**
++     * EXCEPTION TESTS
++     */
++
++    @Test
++    void getInventory_notFound_returns404() throws Exception {
++        when(service.getInventoryByBookId(100L))
++                .thenThrow(new InventoryNotFoundException("Not found"));
++
++        mockMvc.perform(get("/api/inventory/100"))
++                .andExpect(status().isNotFound())
++                .andExpect(jsonPath("$.message").value("Not found"));
++    }
++
++    @Test
++    void addInventory_invalid_returns400() throws Exception {
++        when(service.addInventory(any()))
++                .thenThrow(new InvalidInventoryException("Invalid input"));
++
++        mockMvc.perform(post("/api/inventory")
++                        .contentType(MediaType.APPLICATION_JSON)
++                        .content(mapper.writeValueAsString(request)))
++                .andExpect(status().isBadRequest())
++                .andExpect(jsonPath("$.message").value("Invalid input"));
++    }
++
++    @Test
++    void reduceStock_outOfStock_returns409() throws Exception {
++        ReserveRequest reserve = new ReserveRequest(100L, 50);
++
++        doThrow(new OutOfStockException("Not enough stock"))
++                .when(service).reduceStock(100L, 50);
++
++        mockMvc.perform(put("/api/inventory/reduce")
++                        .contentType(MediaType.APPLICATION_JSON)
++                        .content(mapper.writeValueAsString(reserve)))
++                .andExpect(status().isConflict())
++                .andExpect(jsonPath("$.message").value("Not enough stock"));
+     }
+ }
+\ No newline at end of file
