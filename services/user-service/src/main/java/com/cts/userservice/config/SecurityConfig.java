@@ -4,7 +4,9 @@ import com.cts.userservice.security.filter.JwtAuthFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+
 import static com.cts.userservice.model.RoleName.*;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -42,32 +44,54 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    /** Filter that authenticates requests from a JWT bearer token. */
+    /**
+     * Filter that authenticates requests from a JWT bearer token.
+     */
     private final JwtAuthFilter jwtAuthFilter;
 
     // =========================
     // COMMON CONSTANTS
     // =========================
-    /** HTTP GET method name. */
+    /**
+     * HTTP GET method name.
+     */
     private static final String GET = "GET";
-    /** HTTP POST method name. */
+    /**
+     * HTTP POST method name.
+     */
     private static final String POST = "POST";
-    /** HTTP PUT method name. */
+    /**
+     * HTTP PUT method name.
+     */
     private static final String PUT = "PUT";
-    /** HTTP PATCH method name. */
+    /**
+     * HTTP PATCH method name.
+     */
     private static final String PATCH = "PATCH";
-    /** HTTP DELETE method name. */
+    /**
+     * HTTP DELETE method name.
+     */
     private static final String DELETE = "DELETE";
 
-    /** Base path of the inventory service. */
+    /**
+     * Base path of the inventory service.
+     */
     private static final String INVENTORY = "/api/inventory";
-    /** Base path of the orders service. */
+    /**
+     * Base path of the orders service.
+     */
     private static final String ORDERS = "/api/orders";
-    /** Base path of the cart endpoints. */
+    /**
+     * Base path of the cart endpoints.
+     */
     private static final String CART = "/api/orders/cart";
-    /** Base path of the reviews service. */
+    /**
+     * Base path of the reviews service.
+     */
     private static final String REVIEWS = "/api/reviews";
-    /** Base path of the catalog service. */
+    /**
+     * Base path of the catalog service.
+     */
     private static final String CATALOG = "/api/catalog";
 
     /**
@@ -166,12 +190,12 @@ public class SecurityConfig {
                             }
 
                             //customer can check status
-                            if (path.startsWith(ORDERS)  && path.contains("/status") && GET.equals(method)) {
+                            if (path.startsWith(ORDERS) && path.contains("/status") && GET.equals(method)) {
                                 return new AuthorizationDecision(isCustomer);
                             }
 
                             // update order status
-                            if (path.startsWith(ORDERS)  && path.contains("/status") && PATCH.equals(method)) {
+                            if (path.startsWith(ORDERS) && path.contains("/status") && PATCH.equals(method)) {
                                 return new AuthorizationDecision(isAdmin);
                             }
 

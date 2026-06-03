@@ -11,6 +11,8 @@
         <option value="$PROJECT_DIR$/gateway/pom.xml" />
         <option value="$PROJECT_DIR$/services/user-service/pom.xml" />
         <option value="$PROJECT_DIR$/services/catalog-service/pom.xml" />
+        <option value="$PROJECT_DIR$/common-swagger-config/pom.xml" />
+        <option value="$PROJECT_DIR$/services/order-service/pom.xml" />
       </list>
     </option>
   </component>
