@@ -59,18 +59,22 @@ public class InventoryServiceImpl implements InventoryService {
      * @return inventory details with generated id by repository
      * @throws InvalidInventoryException if Inventory already exists
      */
-    @Override
     public InventoryResponseDTO addInventory(InventoryRequestDTO request) {
+        log.info("Adding inventory for bookId={}, quantity={}", request.getBookId(), request.getQuantity());
 
         if (request.getQuantity() <= 0) {
+            log.error("Invalid quantity={} for bookId={}", request.getQuantity(), request.getBookId());
             throw new InvalidInventoryException("Quantity must be greater than zero");
         }
 
         if (repository.existsByBookId(request.getBookId())) {
+            log.warn("Inventory already exists for bookId={}", request.getBookId());
             throw new InvalidInventoryException("Inventory already exists for this book");
         }
 
         Inventory saved = repository.save(mapToEntity(request));
+        log.info("Inventory created successfully for bookId={}", saved.getBookId());
+
         return mapToResponseDTO(saved);
     }
 
@@ -83,13 +87,18 @@ public class InventoryServiceImpl implements InventoryService {
      */
     @Override
     public InventoryResponseDTO getInventoryByBookId(long bookId) {
+        log.info("Fetching inventory for bookId={}", bookId);
 
         Inventory inventory = repository.findByBookId(bookId)
-                .orElseThrow(() ->
-                        new InventoryNotFoundException("Inventory not found for BookId: " + bookId));
+                .orElseThrow(() -> {
+                    log.error("Inventory not found for bookId={}", bookId);
+                    return new InventoryNotFoundException("Inventory not found for BookId: " + bookId);
+                });
 
+        log.info("Inventory retrieved for bookId={}", bookId);
         return mapToResponseDTO(inventory);
     }
+
 
 
     /**
@@ -99,12 +108,17 @@ public class InventoryServiceImpl implements InventoryService {
      */
     @Override
     public List<InventoryResponseDTO> getAllInventory() {
+        log.info("Fetching all inventory records");
 
-        return repository.findAll()
+        List<InventoryResponseDTO> list = repository.findAll()
                 .stream()
                 .map(this::mapToResponseDTO)
                 .toList();
+
+        log.info("Total inventory records found={}", list.size());
+        return list;
     }
+
 
     /**
      * Updates the quantity of a book.
@@ -118,20 +132,27 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     @Transactional
     public InventoryResponseDTO updateQuantity(long bookId, int quantity) {
+        log.info("Updating quantity for bookId={} to {}", bookId, quantity);
 
         if (quantity < 0) {
+            log.error("Invalid quantity={} for bookId={}", quantity, bookId);
             throw new InvalidInventoryException("Quantity cannot be negative");
         }
 
         Inventory inventory = repository.findByBookId(bookId)
-                .orElseThrow(() ->
-                        new InventoryNotFoundException("Inventory not found"));
+                .orElseThrow(() -> {
+                    log.error("Inventory not found for update bookId={}", bookId);
+                    return new InventoryNotFoundException("Inventory not found");
+                });
 
         inventory.setQuantity(quantity);
 
-        // save is okay here (explicit update use case)
-        return mapToResponseDTO(repository.save(inventory));
+        Inventory updated = repository.save(inventory);
+        log.info("Inventory updated successfully for bookId={}", bookId);
+
+        return mapToResponseDTO(updated);
     }
+
 
     /**
      * Deletes inventory for a given book ID.
@@ -142,12 +163,15 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     @Transactional
     public void deleteInventory(long bookId) {
+        log.info("Deleting inventory for bookId={}", bookId);
 
         if (!repository.existsByBookId(bookId)) {
+            log.error("Inventory not found for deletion bookId={}", bookId);
             throw new InventoryNotFoundException("Inventory not found");
         }
 
         repository.deleteByBookId(bookId);
+        log.info("Inventory deleted successfully for bookId={}", bookId);
     }
 
     /**
@@ -158,9 +182,14 @@ public class InventoryServiceImpl implements InventoryService {
      */
     @Override
     public boolean isStockLow(long bookId) {
-        return repository.findByBookId(bookId)
+        log.info("Checking if stock is low for bookId={}", bookId);
+
+        boolean result = repository.findByBookId(bookId)
                 .map(inv -> inv.getQuantity() < 1)
                 .orElse(true);
+
+        log.info("Stock low status for bookId={} is {}", bookId, result);
+        return result;
     }
 
     /**
@@ -169,13 +198,16 @@ public class InventoryServiceImpl implements InventoryService {
      * @param bookId book identifier
      * @return availability information (empty if not found)
      */
+
     @Override
     public AvailabilityDto getStockDetails(long bookId) {
+        log.info("Fetching stock details for bookId={}", bookId);
 
         Optional<Inventory> optional = repository.findByBookId(bookId);
 
         if (optional.isEmpty()) {
-            return new AvailabilityDto(); // empty response
+            log.warn("No inventory found for bookId={}", bookId);
+            return new AvailabilityDto();
         }
 
         Inventory inventory = optional.get();
@@ -185,6 +217,7 @@ public class InventoryServiceImpl implements InventoryService {
         dto.setAvailableQuantity(inventory.getQuantity());
         dto.setInStock(inventory.getQuantity() > 0);
 
+        log.info("Stock details retrieved for bookId={}", bookId);
         return dto;
     }
 
@@ -197,10 +230,16 @@ public class InventoryServiceImpl implements InventoryService {
      */
     @Override
     public boolean isOutOfStock(long bookId, int orderQty) {
-        return repository.findByBookId(bookId)
+        log.info("Checking out-of-stock for bookId={}, requestedQty={}", bookId, orderQty);
+
+        boolean result = repository.findByBookId(bookId)
                 .map(inv -> inv.getQuantity() < orderQty)
                 .orElse(true);
+
+        log.info("Out-of-stock status for bookId={} is {}", bookId, result);
+        return result;
     }
+
 
     /**
      * Reduces the stock quantity safely using locking.
@@ -214,24 +253,28 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     @Transactional
     public void reduceStock(long bookId, int quantity) {
+        log.info("Reducing stock for bookId={}, quantity={}", bookId, quantity);
 
         if (quantity <= 0) {
+            log.error("Invalid quantity={} for reduction bookId={}", quantity, bookId);
             throw new InvalidInventoryException("Quantity must be greater than zero");
         }
 
         Inventory inventory = repository.findByBookIdForUpdate(bookId)
-                .orElseThrow(() ->
-                        new InventoryNotFoundException("Inventory not found"));
+                .orElseThrow(() -> {
+                    log.error("Inventory not found for reduction bookId={}", bookId);
+                    return new InventoryNotFoundException("Inventory not found");
+                });
 
         log.info("Before reduce: bookId={}, quantity={}", bookId, inventory.getQuantity());
 
         if (inventory.getQuantity() < quantity) {
+            log.warn("Insufficient stock for bookId={}, available={}, requested={}",
+                    bookId, inventory.getQuantity(), quantity);
             throw new OutOfStockException("Insufficient stock");
         }
 
-        // Actual deduction happens here
         inventory.setQuantity(inventory.getQuantity() - quantity);
-
         repository.save(inventory);
 
         log.info("After reduce: bookId={}, quantity={}", bookId, inventory.getQuantity());
@@ -249,20 +292,22 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     @Transactional
     public void releaseStock(long bookId, int quantity) {
+        log.info("Releasing stock for bookId={}, quantity={}", bookId, quantity);
 
         if (quantity <= 0) {
+            log.error("Invalid quantity={} for release bookId={}", quantity, bookId);
             throw new InvalidInventoryException("Quantity must be greater than zero");
         }
 
         Inventory inventory = repository.findByBookIdForUpdate(bookId)
-                .orElseThrow(() ->
-                        new InventoryNotFoundException("Inventory not found"));
+                .orElseThrow(() -> {
+                    log.error("Inventory not found for release bookId={}", bookId);
+                    return new InventoryNotFoundException("Inventory not found");
+                });
 
         log.info("Before release: bookId={}, quantity={}", bookId, inventory.getQuantity());
 
-        // give stock back
         inventory.setQuantity(inventory.getQuantity() + quantity);
-
         repository.save(inventory);
 
         log.info("After release: bookId={}, quantity={}", bookId, inventory.getQuantity());
@@ -276,10 +321,16 @@ public class InventoryServiceImpl implements InventoryService {
      */
     @Override
     public List<InventoryResponseDTO> allOutOfStockBooks() {
-        return repository.findAll()
+        log.info("Fetching all out-of-stock books");
+
+        List<InventoryResponseDTO> list = repository.findAll()
                 .stream()
                 .filter(inv -> inv.getQuantity() == 0)
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
+
+        log.info("Total out-of-stock books found={}", list.size());
+        return list;
     }
+
 }

@@ -7,6 +7,7 @@ import com.cts.inventory.dto.ReserveRequest;
 import com.cts.inventory.service.InventoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,7 @@ import java.util.List;
 /**
  * REST controller for handling inventory-related APIs.
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/inventory")
 @RequiredArgsConstructor
@@ -32,6 +34,10 @@ public class InventoryController {
      */
     @PostMapping
     public ResponseEntity<InventoryResponseDTO> addInventory(@RequestBody @Valid InventoryRequestDTO request) {
+
+        log.info("Received request to create inventory for bookId={}, quantity={}",
+                request.getBookId(), request.getQuantity());
+
         return ResponseEntity.ok(service.addInventory(request));
     }
 
@@ -44,6 +50,8 @@ public class InventoryController {
      */
     @PutMapping("/reduce")
     public ResponseEntity<String> reduceStock(@RequestBody @Valid ReserveRequest reserveRequest) {
+        log.info("Received request to reduce stock for bookId={}, quantity={}",
+                reserveRequest.getBookId(), reserveRequest.getQuantity());
         service.reduceStock(reserveRequest.getBookId(), reserveRequest.getQuantity());
         return ResponseEntity.ok("Stock reduced successfully");
     }
@@ -57,6 +65,8 @@ public class InventoryController {
      */
     @PutMapping("/release")
     public ResponseEntity<String> releaseStock(@RequestBody @Valid ReserveRequest request) {
+        log.info("Received request to release stock for bookId={}, quantity={}",
+                request.getBookId(), request.getQuantity());
         service.releaseStock(request.getBookId(), request.getQuantity());
         return ResponseEntity.ok("Stock released");
     }
@@ -68,6 +78,7 @@ public class InventoryController {
      */
     @GetMapping("/all-out-of-stock-books")
     public ResponseEntity<List<InventoryResponseDTO>> allOutOfStockBooks() {
+        log.info("Fetching all out-of-stock books");
         return ResponseEntity.ok(service.allOutOfStockBooks());
     }
 
@@ -80,6 +91,7 @@ public class InventoryController {
      */
     @GetMapping("/{bookId:\\d+}")
     public ResponseEntity<InventoryResponseDTO> getInventory(@PathVariable Long bookId) {
+        log.info("Fetching inventory for bookId={}", bookId);
         return ResponseEntity.ok(service.getInventoryByBookId(bookId));
     }
 
@@ -91,6 +103,7 @@ public class InventoryController {
      */
     @GetMapping
     public ResponseEntity<List<InventoryResponseDTO>> getAllInventory() {
+        log.info("Fetching all inventory records");
         return ResponseEntity.ok(service.getAllInventory());
     }
 
@@ -106,6 +119,7 @@ public class InventoryController {
     public ResponseEntity<InventoryResponseDTO> updateQuantity(
             @PathVariable Long bookId,
             @RequestParam int quantity) {
+        log.info("Updating inventory for bookId={} with new quantity={}", bookId, quantity);
         return ResponseEntity.ok(service.updateQuantity(bookId, quantity));
     }
 
@@ -117,6 +131,7 @@ public class InventoryController {
      */
     @DeleteMapping("/{bookId:\\d+}")
     public ResponseEntity<String> deleteInventory(@PathVariable long bookId) {
+        log.info("Deleting inventory for bookId={}", bookId);
         service.deleteInventory(bookId);
         return ResponseEntity.ok("Inventory deleted successfully");
     }
@@ -129,6 +144,7 @@ public class InventoryController {
      */
     @GetMapping("/{bookId:\\d+}/low-stock")
     public ResponseEntity<Boolean> isStockLow(@PathVariable long bookId) {
+        log.info("Checking low stock status for bookId={}", bookId);
         return ResponseEntity.ok(service.isStockLow(bookId));
     }
 
@@ -141,6 +157,7 @@ public class InventoryController {
      */
     @GetMapping("/{bookId:\\d+}/availability")
     public ResponseEntity<AvailabilityDto> getStockDetails(@PathVariable long bookId) {
+        log.info("Fetching stock availability for bookId={}", bookId);
         return ResponseEntity.ok(service.getStockDetails(bookId));
     }
 }

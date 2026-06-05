@@ -12,6 +12,7 @@ import com.cts.orderservice.model.*;
 import com.cts.orderservice.repository.CartRepository;
 import com.cts.orderservice.repository.OrderRepository;
 import com.cts.orderservice.service.OrderService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.extern.slf4j.Slf4j;
@@ -311,6 +312,7 @@ public class OrderServiceImpl implements OrderService {
      * @return CompletableFuture containing BookResponse
      * @throws CatalogServiceDownException if catalog service is unavailable after retries
      */
+    @CircuitBreaker(name = "catalogService", fallbackMethod = "catalogFallback")
     @Retry(name = "catalogService", fallbackMethod = "catalogFallback")
     @TimeLimiter(name = "catalogService")
     public CompletableFuture<BookResponse> getBookWithResilience(Long bookId) {
@@ -324,6 +326,7 @@ public class OrderServiceImpl implements OrderService {
      * @return CompletableFuture containing AvailabilityDto
      * @throws InventoryServiceDownException if inventory service is unavailable after retries
      */
+    @CircuitBreaker(name = "inventoryService", fallbackMethod = "inventoryFallback")
     @Retry(name = "inventoryService", fallbackMethod = "inventoryFallback")
     @TimeLimiter(name = "inventoryService")
     public CompletableFuture<AvailabilityDto> checkStock(Long bookId) {
@@ -336,6 +339,8 @@ public class OrderServiceImpl implements OrderService {
      * @param req the reserve request containing bookId and quantity
      * @throws InventoryServiceDownException if inventory service is unavailable after retries
      */
+
+    @CircuitBreaker(name = "inventoryService", fallbackMethod = "reduceFallback")
     @Retry(name = "inventoryService", fallbackMethod = "reduceFallback")
     public void reduceStockSafe(ReserveRequest req) {
         inventoryClient.reduce(req);
@@ -346,6 +351,8 @@ public class OrderServiceImpl implements OrderService {
      * @param req the reserve request containing bookId and quantity
      * @throws InventoryServiceDownException if inventory service is unavailable after retries
      */
+
+    @CircuitBreaker(name = "inventoryService", fallbackMethod = "releaseFallback")
     @Retry(name = "inventoryService", fallbackMethod = "releaseFallback")
     public void releaseStockSafe(ReserveRequest req) {
         inventoryClient.release(req);

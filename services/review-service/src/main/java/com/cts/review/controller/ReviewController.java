@@ -5,6 +5,7 @@ import com.cts.review.service.ReviewService;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.List;
  * REST Controller for managing reviews.
  * Provides endpoints to create, update, moderate and fetch reviews.
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/reviews")
 @RequiredArgsConstructor
@@ -37,6 +39,8 @@ public class ReviewController {
             @RequestHeader("X-User-Id") String userId,
             @RequestBody @Valid ReviewRequestDTO request) {
         request.setUserId(Long.valueOf(userId));
+        log.info("Received request to add review for userId={}, bookId={}", userId, request.getBookId());
+
         return ResponseEntity.ok(service.addReview(request));
     }
 
@@ -55,6 +59,8 @@ public class ReviewController {
             @RequestHeader("X-User-Id") String userId,
             @PathVariable Long reviewId,
             @RequestBody @Valid ReviewRequestDTO request) {
+
+        log.info("Received request to edit reviewId={} by userId={}", reviewId, userId);
         return ResponseEntity.ok(service.editReview(reviewId, Long.valueOf(userId), request));
     }
 
@@ -70,6 +76,8 @@ public class ReviewController {
     public ResponseEntity<ReviewResponseDTO> moderateReview(
             @PathVariable Long reviewId,
             @RequestParam String comment) {
+
+        log.info("Received admin moderation request for reviewId={}", reviewId);
         return ResponseEntity.ok(service.moderateReview(reviewId, comment));
     }
 
@@ -82,6 +90,7 @@ public class ReviewController {
      */
     @GetMapping("/book/{bookId}")
     public ResponseEntity<List<ReviewResponseDTO>> getByBook(@PathVariable Long bookId) {
+        log.info("Fetching reviews for bookId={}", bookId);
         return ResponseEntity.ok(service.getReviewsByBookId(bookId));
     }
 
@@ -96,6 +105,7 @@ public class ReviewController {
     public ResponseEntity<List<ReviewResponseWithBookDetails>> getByUser(
             @Parameter(hidden = true)
             @RequestHeader("X-User-Id") String userId) {
+        log.info("Fetching reviews for userId={}", userId);
         return ResponseEntity.ok(service.getReviewsByUserId(Long.valueOf(userId)));
     }
 
@@ -106,6 +116,7 @@ public class ReviewController {
      */
     @GetMapping
     public ResponseEntity<List<ReviewResponseWithBookDetails>> getAll() {
+        log.info("Fetching all reviews");
         return ResponseEntity.ok(service.getAllReviews());
     }
 }
